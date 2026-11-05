@@ -19,7 +19,7 @@ Rules:
 - Rank by severity x exploitability; at most 25 findings, most severe first. Merge many similar low items into one finding.
 - Judge context: k3s-managed kube-system add-ons and node-exporter host access are expected: rate them LOW/MEDIUM and say so; do not hide them.
 - Admin bindings: rate from the rbac_and_argo data (subjects, wildcard roles); say if a binding looks like a platform default.
-- 'fix': a short YAML/patch or exact command; for image CVEs the target version if 'fixed' is known. Keep evidence to one sentence.
+- 'fix': a short YAML/patch or exact command; for image CVEs the target version if 'fixed' is known. Keep evidence to one sentence that QUOTES, exactly as written in the digest, at least one identifier: a control ID (C-0057, KSV-0017), a CVE ID with its installed/fixed version, a resource name or binding name, or a count with its label. A sentence with no such quote is not evidence.
 - confidence: "high" = the digest shows it directly (a failed control, a CVE with a version, a named binding); "medium" = you inferred severity or impact from context (for example judged it an expected platform default); "low" = the digest is partial, a scanner failed, or you are extrapolating. Never use "high" for a claim the digest does not show.
 - not_checked: copy the digest's not_checked and add anything you could not assess."""
 

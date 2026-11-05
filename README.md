@@ -63,13 +63,14 @@ Weekly CronJob by default (`schedule`). The chart creates no credentials and mou
 
 ```bash
 python test_evals.py                                  # offline: metric logic, fixture sanity, mutation tests, replay of recorded replies
-EVAL_MODE=live EVAL_RECORD=1 EVAL_LABEL=mine .venv/bin/python evals/run_evals.py   # calls the API (~$0.30 for all 12), re-records replies
+EVAL_MODE=live EVAL_RECORD=1 EVAL_RECORD_AS=recorded-mine EVAL_LABEL=mine .venv/bin/python evals/run_evals.py   # calls the API (~$0.2-0.5 for all 12)
+EVAL_REPLAY=recorded-baseline EVAL_LABEL=baseline .venv/bin/python evals/run_evals.py   # re-score any saved recording offline
 EVAL_CASES=real-lab,fixable-cve EVAL_OUT=evals/results-x .venv/bin/python evals/run_evals.py   # subset; EVAL_MODE defaults to recorded (offline)
 ```
 
 **Metrics** (`evals/metrics.py`): *recall* = expected findings found; *severity accuracy* = found items whose severity is in the expected range; *precision (labeled)* = findings that match an expected or acceptable item; *hallucination* = a finding citing a control/CVE ID, version, `Kind/name` resource, hyphenated resource name or number >= 10 that does not occur in `digest.json`; *must-not violations* = severity ceilings (for example the k3s default `system:masters` binding above MEDIUM), banned claims ("cluster is secure", "no vulnerabilities") and invented fix versions; plus JSON validity against the schema, kept `not_checked` entries, framework numbers copied exactly, cost and latency.
 
-**Baseline (current prompt, Sonnet 5.5, effort low; 12 cases, live replies recorded 2026-11-05):**
+**Baseline (the Phase 1 prompt, Sonnet 5.5, effort low; 12 cases, live replies recorded 2026-11-05):**
 
 | metric | value |
 |---|---|
@@ -79,9 +80,30 @@ EVAL_CASES=real-lab,fixable-cve EVAL_OUT=evals/results-x .venv/bin/python evals/
 | fix-version accuracy | 1.0 |
 | hallucinated findings | 0 of 69 |
 | must-not violations | 0 |
+| evidence grounded | 0.99 (1 of 69 findings quotes no digest identifier) |
+| confidence field | absent (0.0) |
 | framework number errors | 0 |
 | precision (labeled) | 0.91: 63 of 69 findings match a label; the other 6 are legitimate (non-root MEDIUM, roll-ups of 40 controls, node-exporter/svclb rated MEDIUM as expected) and were left unlabeled |
 | cost / latency per case | $0.028 / 17 s (real-lab: $0.10 / 33 s) |
+
+### Phase 2: triage prompt changelog
+One change at a time, each re-run live on all 12 cases (replies saved as `recorded-<label>.json`, re-scored offline with the final scorer; `recorded.json` is the latest accepted run).
+
+| change | valid | recall | precision | halluc | evidence grounded | confidence | must-not | avg cost | avg time |
+|---|---|---|---|---|---|---|---|---|---|
+| baseline (Phase 1 prompt) | 1.0 | 1.0 | 0.913 | 0 | 0.986 | 0.0 | 0 | $0.0276 | 16.7s |
+| 1. schema-enforced output (`output_format` JSON schema) | 1.0 | 1.0 | 0.913 | 0 | 0.971 | 0.0 | 0 | $0.0227 | 14.7s |
+| 2. required `confidence` high/medium/low + rubric in the prompt | 1.0 | 1.0 | 0.913 | 0 | 1.0 | 1.0 | 0 | $0.0306 | 19.5s |
+| 3. evidence must quote digest identifiers | 1.0 | 1.0 | 0.882 | 0 | 1.0 | 1.0 | 0 | $0.0397 | 17.1s |
+| 3, second run (same prompt, noise check) | 1.0 | 1.0 | 0.881 | 0 | 1.0 | 1.0 | 0 | $0.0179 | 12.7s |
+
+What changed and what it means:
+- **Change 1** guarantees the reply matches the schema (before, it was a free-text JSON that happened to parse). No quality delta; the structured-output call sometimes takes a 2nd or 3rd turn, so `max_turns` is 3.
+- **Change 2** adds a per-finding `confidence` (36 high, 24 medium, 8 low over 68 findings in the final run) and shows it in the report. The rubric: high = shown directly by the digest, medium = inferred from context, low = partial data or a failed scanner.
+- **Change 3** is the requested "quote identifiers" rule. **The evals cannot show it helps:** grounding was already 0.99 before it and 1.0 after change 2, and precision moved 0.913 -> 0.882, which is one extra finding the labels do not cover. I kept it because you asked for it and it did no measurable harm, not because it measured better.
+- **Cost is noise-level, not a trend:** the identical prompt cost $0.040 and $0.018 per case in two runs. The cause is how many turns the structured-output call takes (2 vs 3, recorded as `turns` in each reply), which varies per call. Compare cost only across many runs.
+- **Scorer changes made during Phase 2** (all recordings re-scored with the final version): injection bans apply to titles and the summary, so reporting the attack in evidence is not penalised; digit-only ranges like `12-13` are not names; the grounding check accepts versions, package paths (`github.com/org/pkg`), `N SEVERITY` counts that match the digest, and quoted digest field names. The first versions of these checks produced false positives and false negatives; the table above uses the final one throughout.
+- The suite is still saturated on quality (recall 1.0, 0 hallucinations, 0 violations), so Phase 2 improvements show up only in the new structural properties (schema, confidence, grounding), not in triage accuracy.
 
 How to read this honestly:
 - **The suite is saturated.** The current prompt scores 1.0 on everything, so these numbers show no headroom for Phase 2: they protect against regressions, they cannot yet show an improvement.

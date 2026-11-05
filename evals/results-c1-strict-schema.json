@@ -11,7 +11,7 @@
   "hallucination_rate": 0.0,
   "severity_accuracy": 1.0,
   "fix_version_accuracy": 1.0,
-  "evidence_grounded_rate": 0.942,
+  "evidence_grounded_rate": 0.971,
   "confidence_valid_rate": 0.0,
   "must_not_violations": 0,
   "not_checked_missing": 0,
@@ -61,7 +61,7 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
-   "evidence_grounded": 5,
+   "evidence_grounded": 7,
    "confidence_valid": 0,
    "confidence_dist": {
     "": 7

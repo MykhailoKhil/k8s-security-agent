@@ -94,7 +94,11 @@ def grounded(f: dict, digest_text: str) -> bool:
     if any(len(t) > 1 and t.lower() in dl for t in toks):
         return True
     # "3 MEDIUM vulnerabilities": the count must match a severity count in the digest
-    return any(re.search(rf'"{sev}":\s*{n}\b', digest_text, re.I) for n, sev in re.findall(r"\b(\d+)\s+(CRITICAL|HIGH|MEDIUM|LOW)\b", ev, re.I))
+    pairs = re.findall(r"\b(\d+)\s+(CRITICAL|HIGH|MEDIUM|LOW)\b", ev, re.I) + [(n, sev) for sev, n in re.findall(r"\b(CRITICAL|HIGH|MEDIUM|LOW):?\s+(\d+)\b", ev, re.I)]
+    if any(re.search(rf'"{sev}":\s*{n}\b', digest_text, re.I) for n, sev in pairs):
+        return True
+    # digest field names quoted verbatim (vuln_counts, critical_high_vulns, ...)
+    return any(w.lower() in dl for w in re.findall(r"\b[a-z]+(?:_[a-z]+)+\b", ev))
 
 
 def framework_errors(data: dict, digest: dict) -> list[str]:
