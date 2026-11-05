@@ -1,6 +1,6 @@
 """Run triage over fixtures and score it. Env-configured:
 EVAL_MODE=recorded|live (default recorded: replays recorded.json, offline, free)
-EVAL_RECORD=1   save live replies to fixtures/<case>/recorded.json
+EVAL_RECORD=1   save live replies to fixtures/<case>/<EVAL_RECORD_AS>.json (default recorded); EVAL_REPLAY=<name> replays another recording
 EVAL_CASES=a,b  subset;  EVAL_CONCURRENCY=3;  EVAL_LABEL=baseline  (names this run in results)
 EVAL_OUT=evals/results  (writes <out>.json and <out>.md)"""
 import asyncio
@@ -22,11 +22,14 @@ async def run_case(name: str, mode: str, sem: asyncio.Semaphore) -> tuple[str, d
     if mode == "live":
         from triage import extract_json, triage
         async with sem:
-            r = await triage(json.dumps(digest, separators=(",", ":")), expected["targets"])
+            try:
+                r = await triage(json.dumps(digest, separators=(",", ":")), expected["targets"])
+            except Exception as e:  # one failing case must not kill the run; it scores as invalid JSON
+                return name, {"json_valid": False, "schema_errors": [f"triage call failed: {e}"[:200]], "cost_usd": 0, "seconds": 0}
         if os.environ.get("EVAL_RECORD") == "1":
-            (d / "recorded.json").write_text(json.dumps(r, indent=1))
+            (d / f"{os.environ.get('EVAL_RECORD_AS', 'recorded')}.json").write_text(json.dumps(r, indent=1))
     else:
-        r = json.loads((d / "recorded.json").read_text())
+        r = json.loads((d / f"{os.environ.get('EVAL_REPLAY', 'recorded')}.json").read_text())
         from triage import extract_json
     try:
         data = extract_json(r["text"])

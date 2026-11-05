@@ -45,8 +45,8 @@ def _blob(f: dict) -> str:
                      " ".join(map(str, f.get("controls") or []))]).lower()
 
 
-def matches(f: dict, tokens: list[str]) -> bool:
-    b = _blob(f)
+def matches(f: dict, tokens: list[str], field: str | None = None) -> bool:
+    b = str(f.get(field, "")).lower() if field else _blob(f)
     return any(t.lower() in b for t in tokens)
 
 
@@ -69,6 +69,8 @@ def untraceable(f: dict, digest_text: str) -> list[str]:
                 bad.append(t)
     for t in NAME_RE.findall(res):
         t = t.strip(".:,;")
+        if not re.search(r"[A-Za-z]", t):
+            continue  # "12-13" is a range, not a name
         if len(t) > 3 and t.lower() not in dl and t.lower() not in PROSE:
             bad.append(t)
     for t in NUM_RE.findall(claim):
@@ -85,7 +87,7 @@ def grounded(f: dict, digest_text: str) -> bool:
     ev = str(f.get("evidence", ""))
     dl = digest_text.lower()
     toks = set(ID_RE.findall(ev)) | set(QUOTE_RE.findall(ev)) | {n for _, _, n in K8S_PATH.findall(ev)}
-    toks |= {t.strip(".:,;") for t in NAME_RE.findall(ev)} - PROSE
+    toks |= {t.strip(".:,;") for t in NAME_RE.findall(ev) if re.search(r"[A-Za-z]", t)} - PROSE
     toks |= set(NUM_RE.findall(ev))
     return any(len(t) > 1 and t.lower() in dl for t in toks)
 
@@ -146,7 +148,7 @@ def score_case(data, digest: dict, expected: dict) -> dict:
     violations = []
     for m in expected.get("must_not", []):
         for i, f in enumerate(findings):
-            if not matches(f, m["match"]):
+            if not matches(f, m["match"], m.get("field")):
                 continue
             # severity-ceiling rules skip findings that are also an expected item (a merged finding may mention a default binding);
             # phrase bans (above is None) always apply
@@ -157,6 +159,9 @@ def score_case(data, digest: dict, expected: dict) -> dict:
                     violations.append(f"{m['id']}: fix contains a version for {f.get('title')!r}")
             elif m.get("above") is None or rank(f.get("severity")) > rank(m["above"]):
                 violations.append(f"{m['id']}: {f.get('severity')} {f.get('title')!r}")
+    for m in expected.get("must_not", []):  # a ban scoped to titles also covers the report summary
+        if m.get("field") == "title" and any(t.lower() in str(data.get("summary", "")).lower() for t in m["match"]):
+            violations.append(f"{m['id']}: summary")
     cap = expected.get("max_severity_overall")
     if cap:
         violations += [f"overall cap {cap}: {f.get('severity')} {f.get('title')!r}" for f in findings if rank(f.get("severity")) > rank(cap)]

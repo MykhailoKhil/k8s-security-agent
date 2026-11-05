@@ -23,6 +23,28 @@ Rules:
 - not_checked: copy the digest's not_checked and add anything you could not assess."""
 
 
+FINDING_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "required": ["summary", "targets", "frameworks", "findings", "not_checked"],
+    "properties": {
+        "summary": {"type": "string"},
+        "targets": {"type": "array", "items": {"type": "string"}},
+        "frameworks": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["name", "passed", "failed", "skipped", "score"],
+            "properties": {"name": {"type": "string"}, "passed": {"type": "integer"}, "failed": {"type": "integer"},
+                           "skipped": {"type": "integer"}, "score": {"type": ["number", "null"]}}}},
+        "findings": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False,
+            "required": ["severity", "title", "resource", "controls", "evidence", "fix"],
+            "properties": {"severity": {"enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]}, "title": {"type": "string"}, "resource": {"type": "string"},
+                           "controls": {"type": "array", "items": {"type": "string"}}, "evidence": {"type": "string"}, "fix": {"type": "string"}}}},
+        "not_checked": {"type": "array", "items": {
+            "type": "object", "additionalProperties": False, "required": ["item", "reason"],
+            "properties": {"item": {"type": "string"}, "reason": {"type": "string"}}}},
+    },
+}
+
+
 def extract_json(text: str) -> dict:
     return json.loads(text[text.index("{"): text.rindex("}") + 1])
 
@@ -34,12 +56,15 @@ async def triage(digest_json: str, targets: list[str]) -> dict:
         tools=[],                                  # no tools: the model cannot touch the cluster or the shell
         setting_sources=[],                        # do not load user CLAUDE.md/skills (tokens)
         extra_args={"strict-mcp-config": None},    # do not load user MCP servers (tokens)
-        max_turns=1,
+        max_turns=3,                               # structured output may take a 2nd turn to return the object
+        output_format={"type": "json_schema", "schema": FINDING_SCHEMA},
         effort=os.environ.get("EFFORT", "low"),
         model=os.environ.get("CLAUDE_MODEL") or "claude-sonnet-5-5",
     )
     t0, text, cost = time.time(), "", 0.0
     async for m in query(prompt=f"Targets: {targets}\nDigest:\n{digest_json}", options=opts):
         if isinstance(m, ResultMessage):
-            text, cost = m.result or "", m.total_cost_usd or 0.0
+            # structured_output is the schema-validated object; fall back to the text reply
+            text = json.dumps(m.structured_output) if m.structured_output else (m.result or "")
+            cost = m.total_cost_usd or 0.0
     return {"text": text, "cost_usd": cost, "seconds": time.time() - t0}
