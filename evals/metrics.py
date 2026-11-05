@@ -33,6 +33,8 @@ def validate(d) -> list[str]:
         for k in ("title", "resource", "evidence", "fix"):
             if not isinstance(f.get(k), str):
                 errs.append(f"findings[{i}].{k} not a string")
+        if "confidence" in f and str(f["confidence"]).lower() not in ("high", "medium", "low"):
+            errs.append(f"findings[{i}].confidence invalid: {f['confidence']!r}")
         if not isinstance(f.get("controls"), list):
             errs.append(f"findings[{i}].controls not a list")
     return errs
@@ -73,6 +75,19 @@ def untraceable(f: dict, digest_text: str) -> list[str]:
         if t not in ints:
             bad.append(t)
     return sorted(set(bad))
+
+
+QUOTE_RE = re.compile(r"[`'\"]([^`'\"]{3,60})[`'\"]")
+
+
+def grounded(f: dict, digest_text: str) -> bool:
+    """Evidence must quote at least one identifier (ID, quoted string, resource name, hyphenated name or number) found in the digest."""
+    ev = str(f.get("evidence", ""))
+    dl = digest_text.lower()
+    toks = set(ID_RE.findall(ev)) | set(QUOTE_RE.findall(ev)) | {n for _, _, n in K8S_PATH.findall(ev)}
+    toks |= {t.strip(".:,;") for t in NAME_RE.findall(ev)} - PROSE
+    toks |= set(NUM_RE.findall(ev))
+    return any(len(t) > 1 and t.lower() in dl for t in toks)
 
 
 def framework_errors(data: dict, digest: dict) -> list[str]:
@@ -149,12 +164,16 @@ def score_case(data, digest: dict, expected: dict) -> dict:
         violations.append(f"{len(findings)} findings > max {expected['max_findings']}")
     nc_text = json.dumps(data.get("not_checked") or []).lower()
     nc_missing = [s for s in expected.get("must_have_not_checked", []) if s.lower() not in nc_text]
+    grounded_n = sum(grounded(f, digest_text) for f in findings)
+    conf = [str(f.get("confidence", "")).lower() for f in findings]
     halluc = {f.get("title"): bad for f in findings if (bad := untraceable(f, digest_text))}
     r.update({
         "findings": len(findings), "expected": len(inc), "found": found, "missed": missed,
         "severity_ok": sev_ok, "wrong_severity": wrong_sev, "fix_checks": fix_n, "fix_ok": fix_ok,
         "labeled_correct": len(matched_idx), "unlabeled": len(findings) - len(matched_idx),
         "hallucinated": len(halluc), "hallucination_detail": halluc,
+        "evidence_grounded": grounded_n, "confidence_valid": sum(c in ("high", "medium", "low") for c in conf),
+        "confidence_dist": {c: conf.count(c) for c in set(conf)},
         "violations": violations, "not_checked_missing": nc_missing,
         "framework_errors": framework_errors(data, digest),
     })
@@ -175,6 +194,8 @@ def aggregate(cases: dict) -> dict:
         "hallucination_rate": round(sum(c["hallucinated"] for c in ok) / n_find, 3) if n_find else None,
         "severity_accuracy": round(sum(c["severity_ok"] for c in ok) / max(sum(c["found"] for c in ok), 1), 3),
         "fix_version_accuracy": (round(sum(c["fix_ok"] for c in ok) / sum(c["fix_checks"] for c in ok), 3) if sum(c["fix_checks"] for c in ok) else None),
+        "evidence_grounded_rate": round(sum(c["evidence_grounded"] for c in ok) / n_find, 3) if n_find else None,
+        "confidence_valid_rate": round(sum(c["confidence_valid"] for c in ok) / n_find, 3) if n_find else None,
         "must_not_violations": sum(len(c["violations"]) for c in ok),
         "not_checked_missing": sum(len(c["not_checked_missing"]) for c in ok),
         "framework_errors": sum(len(c["framework_errors"]) for c in ok),

@@ -2,7 +2,7 @@
 import json
 from pathlib import Path
 
-from evals.metrics import aggregate, framework_errors, score_case, untraceable, validate
+from evals.metrics import aggregate, framework_errors, grounded, score_case, untraceable, validate
 
 # --- metric logic
 digest = {"clusters": {"c": {"kubescape": {"frameworks": [{"name": "NSA", "score": 61.1, "passed": 5, "failed": 16, "skipped": 5}],
@@ -35,6 +35,13 @@ assert untraceable(ok, json.dumps({**digest, "x": "argocd-manager KSV-0044 KSV-0
 pss_digest = {"c": {"trivy pss": {"failed": [{"id": "1"}] * 9, "passed_controls": 8, "total_controls": 17}}}
 assert framework_errors({"frameworks": [{"name": "Trivy PSS (cluster)", "passed": 8, "failed": 9, "skipped": 0}]}, pss_digest) == []
 assert framework_errors({"frameworks": [{"name": "Trivy PSS", "passed": 9, "failed": 8, "skipped": 0}]}, pss_digest)
+
+# evidence grounding and confidence
+dg = json.dumps(digest)
+assert grounded({"evidence": "C-0057 fails on default/Deployment/shell"}, dg) and grounded({"evidence": "Resource 'traefik' is affected"}, dg)
+assert not grounded({"evidence": "Several workloads look risky"}, dg) and not grounded({"evidence": "C-9999 on ghost-thing"}, dg)
+assert validate({"summary": "", "targets": [], "frameworks": [], "not_checked": [], "findings": [{"severity": "LOW", "title": "", "resource": "", "evidence": "", "fix": "", "controls": [], "confidence": "sure"}]})
+assert score_case(good, digest, exp)["confidence_valid"] == 0
 
 # --- fixtures are internally consistent: every expected token occurs in the digest, so a correct model can pass
 for d in sorted(Path("evals/fixtures").iterdir()):

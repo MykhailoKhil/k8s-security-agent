@@ -11,6 +11,8 @@
   "hallucination_rate": 0.0,
   "severity_accuracy": 1.0,
   "fix_version_accuracy": 1.0,
+  "evidence_grounded_rate": 0.855,
+  "confidence_valid_rate": 0.0,
   "must_not_violations": 0,
   "not_checked_missing": 0,
   "framework_errors": 0,
@@ -33,6 +35,11 @@
    "unlabeled": 2,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 4,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 5
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -54,6 +61,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 5,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 7
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -75,6 +87,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 2,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 3
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -96,6 +113,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 3,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 3
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -117,6 +139,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 6,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 6
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -138,6 +165,11 @@
    "unlabeled": 2,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 5,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 5
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -159,6 +191,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 6,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 7
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -180,6 +217,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 4,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 6
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -201,6 +243,11 @@
    "unlabeled": 1,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 4,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 5
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -222,6 +269,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 4,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 5
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -243,6 +295,11 @@
    "unlabeled": 0,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 13,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 14
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
@@ -264,6 +321,11 @@
    "unlabeled": 1,
    "hallucinated": 0,
    "hallucination_detail": {},
+   "evidence_grounded": 3,
+   "confidence_valid": 0,
+   "confidence_dist": {
+    "": 3
+   },
    "violations": [],
    "not_checked_missing": [],
    "framework_errors": [],
