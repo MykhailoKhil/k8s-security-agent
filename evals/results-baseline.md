@@ -26,7 +26,7 @@
 | hallucination_rate | 0.0 |
 | severity_accuracy | 1.0 |
 | fix_version_accuracy | 1.0 |
-| evidence_grounded_rate | 0.855 |
+| evidence_grounded_rate | 0.986 |
 | confidence_valid_rate | 0.0 |
 | must_not_violations | 0 |
 | not_checked_missing | 0 |

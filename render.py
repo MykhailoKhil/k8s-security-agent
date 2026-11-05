@@ -19,7 +19,7 @@ th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #eceff3;vertical-
 th{background:#eef1f5}.badge{color:#fff;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600}
 pre{background:#10151c;color:#e6edf3;padding:10px;border-radius:6px;overflow:auto;margin:6px 0 0;font-size:12px}
 details summary{cursor:pointer;color:#175cd3}.bar{height:8px;background:#e4e7ec;border-radius:4px;min-width:90px}
-.bar i{display:block;height:8px;border-radius:4px;background:#2e7d32}
+.conf{color:#667}.bar i{display:block;height:8px;border-radius:4px;background:#2e7d32}
 """
 
 
@@ -46,6 +46,7 @@ def render(d: dict) -> str:
     rows = "".join(
         f"<tr><td>{badge(f.get('severity', ''))}</td><td><b>{e(f.get('title'))}</b><br><small>{e(f.get('resource'))}</small></td>"
         f"<td>{e(', '.join(map(str, f.get('controls', []))))}</td><td>{e(f.get('evidence'))}"
+        + (f" <small class=\"conf\">confidence: {e(f['confidence'])}</small>" if f.get("confidence") else "")
         + (f"<details><summary>Fix</summary><pre>{e(f['fix'])}</pre></details>" if f.get("fix") else "")
         + "</td></tr>"
         for f in findings

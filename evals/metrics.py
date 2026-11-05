@@ -79,6 +79,7 @@ def untraceable(f: dict, digest_text: str) -> list[str]:
     return sorted(set(bad))
 
 
+PKG_RE = re.compile(r"\b[a-z0-9.-]+\.[a-z]{2,}/[\w./-]+")  # github.com/org/pkg, google.golang.org/grpc
 QUOTE_RE = re.compile(r"[`'\"]([^`'\"]{3,60})[`'\"]")
 
 
@@ -89,7 +90,11 @@ def grounded(f: dict, digest_text: str) -> bool:
     toks = set(ID_RE.findall(ev)) | set(QUOTE_RE.findall(ev)) | {n for _, _, n in K8S_PATH.findall(ev)}
     toks |= {t.strip(".:,;") for t in NAME_RE.findall(ev) if re.search(r"[A-Za-z]", t)} - PROSE
     toks |= set(NUM_RE.findall(ev))
-    return any(len(t) > 1 and t.lower() in dl for t in toks)
+    toks |= {v.lstrip("v") for v in VER_RE.findall(ev)} | set(PKG_RE.findall(ev))
+    if any(len(t) > 1 and t.lower() in dl for t in toks):
+        return True
+    # "3 MEDIUM vulnerabilities": the count must match a severity count in the digest
+    return any(re.search(rf'"{sev}":\s*{n}\b', digest_text, re.I) for n, sev in re.findall(r"\b(\d+)\s+(CRITICAL|HIGH|MEDIUM|LOW)\b", ev, re.I))
 
 
 def framework_errors(data: dict, digest: dict) -> list[str]:
