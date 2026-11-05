@@ -1,0 +1,74 @@
+{
+ "description": "Privileged DaemonSet/Deployment with hostPath; only the default cluster-admin binding.",
+ "targets": [
+  "goat"
+ ],
+ "must_include": [
+  {
+   "id": "privileged",
+   "any_of": [
+    "C-0057",
+    "KSV-0017",
+    "privileged"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ]
+  },
+  {
+   "id": "hostpath",
+   "any_of": [
+    "C-0048",
+    "KSV-0023",
+    "hostpath"
+   ],
+   "severity": [
+    "MEDIUM",
+    "CRITICAL"
+   ]
+  }
+ ],
+ "acceptable": [
+  {
+   "id": "root",
+   "any_of": [
+    "C-0013",
+    "non-root",
+    "root"
+   ]
+  },
+  {
+   "id": "privesc",
+   "any_of": [
+    "C-0016",
+    "privilege escalation"
+   ]
+  },
+  {
+   "id": "cve",
+   "any_of": [
+    "CVE-2025-90001"
+   ]
+  },
+  {
+   "id": "readonly-fs",
+   "any_of": [
+    "C-0017",
+    "filesystem"
+   ]
+  }
+ ],
+ "must_not": [
+  {
+   "id": "default-admin",
+   "match": [
+    "system:masters"
+   ],
+   "above": "MEDIUM"
+  }
+ ],
+ "must_have_not_checked": [
+  "node and control-plane"
+ ]
+}

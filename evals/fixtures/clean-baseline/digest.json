@@ -1,0 +1,83 @@
+{
+ "clusters": {
+  "good": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 96.0,
+      "passed": 24,
+      "failed": 1,
+      "skipped": 1
+     },
+     {
+      "name": "MITRE",
+      "score": 100.0,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 1
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0017",
+      "name": "Immutable container filesystem",
+      "severity": "LOW",
+      "resources": 2,
+      "examples": [
+       "app/Deployment/web"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "MEDIUM": 3
+    },
+    "misconfig_counts": {
+     "LOW": 2
+    },
+    "critical_high_vulns": [],
+    "misconfigs": [
+     {
+      "id": "KSV-0014",
+      "title": "Root file system is not read-only",
+      "severity": "LOW",
+      "resources": [
+       "app/Deployment/web"
+      ],
+      "count": 1
+     }
+    ],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [],
+    "passed_controls": 17,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

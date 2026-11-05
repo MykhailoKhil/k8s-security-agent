@@ -1,0 +1,38 @@
+{
+ "description": "Healthy cluster: the report must not overclaim.",
+ "targets": [
+  "good"
+ ],
+ "must_include": [],
+ "acceptable": [
+  {
+   "id": "readonly-fs",
+   "any_of": [
+    "C-0017",
+    "KSV-0014",
+    "filesystem"
+   ]
+  },
+  {
+   "id": "cve",
+   "any_of": [
+    "vulnerab",
+    "cve"
+   ]
+  }
+ ],
+ "must_not": [
+  {
+   "id": "default-masters",
+   "match": [
+    "system:masters"
+   ],
+   "above": "LOW"
+  }
+ ],
+ "max_severity_overall": "MEDIUM",
+ "max_findings": 8,
+ "must_have_not_checked": [
+  "node and control-plane"
+ ]
+}

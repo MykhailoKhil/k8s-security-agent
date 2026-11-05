@@ -1,0 +1,65 @@
+{
+ "description": "Argo CD project with wildcard scope, root app on the default project tracking HEAD.",
+ "targets": [
+  "mgmt"
+ ],
+ "must_include": [
+  {
+   "id": "wildcard-project",
+   "any_of": [
+    "wildcard"
+   ],
+   "severity": [
+    "MEDIUM",
+    "HIGH"
+   ]
+  },
+  {
+   "id": "root-default",
+   "any_of": [
+    "root"
+   ],
+   "severity": [
+    "LOW",
+    "HIGH"
+   ]
+  },
+  {
+   "id": "argocd-manager",
+   "any_of": [
+    "argocd-manager"
+   ],
+   "severity": [
+    "MEDIUM",
+    "CRITICAL"
+   ]
+  }
+ ],
+ "acceptable": [
+  {
+   "id": "seccomp",
+   "any_of": [
+    "seccomp"
+   ]
+  },
+  {
+   "id": "readonly-fs",
+   "any_of": [
+    "C-0017",
+    "filesystem"
+   ]
+  }
+ ],
+ "must_not": [
+  {
+   "id": "default-masters",
+   "match": [
+    "system:masters"
+   ],
+   "above": "MEDIUM"
+  }
+ ],
+ "must_have_not_checked": [
+  "node and control-plane"
+ ]
+}

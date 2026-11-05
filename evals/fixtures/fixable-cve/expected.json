@@ -1,0 +1,61 @@
+{
+ "description": "Critical image CVEs; one has a known fixed version, one has none.",
+ "targets": [
+  "edge"
+ ],
+ "must_include": [
+  {
+   "id": "traefik-cve",
+   "any_of": [
+    "CVE-2026-65600"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ],
+   "fix_contains": [
+    "3.6.23"
+   ]
+  },
+  {
+   "id": "metrics-cve",
+   "any_of": [
+    "CVE-2026-33186"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ],
+   "fix_contains": [
+    "1.79.3"
+   ]
+  }
+ ],
+ "acceptable": [
+  {
+   "id": "grafana-cve",
+   "any_of": [
+    "CVE-2026-11111"
+   ]
+  },
+  {
+   "id": "readonly-fs",
+   "any_of": [
+    "C-0017",
+    "filesystem"
+   ]
+  }
+ ],
+ "must_not": [
+  {
+   "id": "invented-fix-version",
+   "match": [
+    "CVE-2026-11111"
+   ],
+   "forbid_in_fix": "\\d+\\.\\d+"
+  }
+ ],
+ "must_have_not_checked": [
+  "node and control-plane"
+ ]
+}

@@ -1,0 +1,113 @@
+{
+ "clusters": {
+  "mgmt": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 75.0,
+      "passed": 14,
+      "failed": 6,
+      "skipped": 6
+     },
+     {
+      "name": "MITRE",
+      "score": 80.0,
+      "passed": 12,
+      "failed": 4,
+      "skipped": 6
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0017",
+      "name": "Immutable container filesystem",
+      "severity": "LOW",
+      "resources": 4,
+      "examples": [
+       "argocd/Deployment/argocd-server"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "MEDIUM": 8
+    },
+    "misconfig_counts": {
+     "LOW": 4
+    },
+    "critical_high_vulns": [],
+    "misconfigs": [],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [
+     {
+      "id": "10",
+      "name": "Seccomp",
+      "severity": "MEDIUM",
+      "fails": 2
+     }
+    ],
+    "passed_controls": 16,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     },
+     {
+      "binding": "argocd-manager",
+      "role": "cluster-admin",
+      "subjects": [
+       "ServiceAccount:kube-system/argocd-manager"
+      ]
+     }
+    ],
+    "argo_projects": [
+     {
+      "project": "platform",
+      "wildcard_destination": true,
+      "wildcard_sources": true,
+      "all_cluster_resources": true
+     },
+     {
+      "project": "apps",
+      "wildcard_destination": false,
+      "wildcard_sources": false,
+      "all_cluster_resources": false
+     }
+    ],
+    "argo_apps_risky": [
+     {
+      "app": "root",
+      "project": "default",
+      "revision": "HEAD"
+     },
+     {
+      "app": "alloy",
+      "project": "platform",
+      "revision": "main"
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

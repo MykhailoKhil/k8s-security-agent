@@ -1,0 +1,121 @@
+{
+ "clusters": {
+  "stage": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 70.0,
+      "passed": 14,
+      "failed": 7,
+      "skipped": 5
+     },
+     {
+      "name": "MITRE",
+      "score": 75.0,
+      "passed": 12,
+      "failed": 5,
+      "skipped": 5
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0030",
+      "name": "Ingress and Egress blocked",
+      "severity": "MEDIUM",
+      "resources": 14,
+      "examples": [
+       "shop/Deployment/cart",
+       "shop/Deployment/web"
+      ]
+     },
+     {
+      "id": "C-0009",
+      "name": "Resource policies",
+      "severity": "LOW",
+      "resources": 14,
+      "examples": [
+       "shop/Deployment/cart"
+      ]
+     },
+     {
+      "id": "C-0004",
+      "name": "Resources memory limit and request",
+      "severity": "MEDIUM",
+      "resources": 9,
+      "examples": [
+       "shop/Deployment/web"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "MEDIUM": 6
+    },
+    "misconfig_counts": {
+     "MEDIUM": 5,
+     "LOW": 14
+    },
+    "critical_high_vulns": [],
+    "misconfigs": [
+     {
+      "id": "KSV-0013",
+      "title": "Image tag ':latest' used",
+      "severity": "MEDIUM",
+      "resources": [
+       "shop/Deployment/cart",
+       "shop/Deployment/web",
+       "shop/Deployment/worker"
+      ],
+      "count": 3
+     },
+     {
+      "id": "KSV-0011",
+      "title": "CPU not limited",
+      "severity": "LOW",
+      "resources": [
+       "shop/Deployment/cart"
+      ],
+      "count": 1
+     }
+    ],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [
+     {
+      "id": "10",
+      "name": "Seccomp",
+      "severity": "MEDIUM",
+      "fails": 3
+     }
+    ],
+    "passed_controls": 16,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

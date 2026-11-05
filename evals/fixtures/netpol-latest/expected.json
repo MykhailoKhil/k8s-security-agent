@@ -1,0 +1,53 @@
+{
+ "description": "Missing network policies, :latest tags, missing limits. Nothing critical.",
+ "targets": [
+  "stage"
+ ],
+ "must_include": [
+  {
+   "id": "netpol",
+   "any_of": [
+    "C-0030",
+    "network polic",
+    "networkpolic"
+   ],
+   "severity": [
+    "MEDIUM",
+    "HIGH"
+   ]
+  },
+  {
+   "id": "latest",
+   "any_of": [
+    "KSV-0013",
+    ":latest"
+   ],
+   "severity": [
+    "LOW",
+    "MEDIUM"
+   ]
+  }
+ ],
+ "acceptable": [
+  {
+   "id": "limits",
+   "any_of": [
+    "C-0009",
+    "C-0004",
+    "KSV-0011",
+    "limit"
+   ]
+  },
+  {
+   "id": "seccomp",
+   "any_of": [
+    "seccomp"
+   ]
+  }
+ ],
+ "must_not": [],
+ "max_severity_overall": "HIGH",
+ "must_have_not_checked": [
+  "node and control-plane"
+ ]
+}

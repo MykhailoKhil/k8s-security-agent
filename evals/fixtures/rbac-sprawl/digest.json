@@ -1,0 +1,125 @@
+{
+ "clusters": {
+  "prod": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 52.0,
+      "passed": 10,
+      "failed": 11,
+      "skipped": 5
+     },
+     {
+      "name": "MITRE",
+      "score": 55.0,
+      "passed": 9,
+      "failed": 9,
+      "skipped": 5
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0035",
+      "name": "Administrative Roles",
+      "severity": "HIGH",
+      "resources": 3,
+      "examples": [
+       "ClusterRole/ci-wildcard",
+       "ClusterRoleBinding/dev-team-admin"
+      ]
+     },
+     {
+      "id": "C-0015",
+      "name": "List Kubernetes secrets",
+      "severity": "HIGH",
+      "resources": 3,
+      "examples": [
+       "ClusterRole/ci-wildcard"
+      ]
+     },
+     {
+      "id": "C-0002",
+      "name": "Prevent containers from allowing command execution",
+      "severity": "MEDIUM",
+      "resources": 4,
+      "examples": [
+       "ClusterRole/ci-wildcard"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "MEDIUM": 4
+    },
+    "misconfig_counts": {
+     "HIGH": 3
+    },
+    "critical_high_vulns": [],
+    "misconfigs": [
+     {
+      "id": "KSV-0041",
+      "title": "Manage secrets",
+      "severity": "HIGH",
+      "resources": [
+       "/ClusterRole/ci-wildcard",
+       "/ClusterRole/admin",
+       "/ClusterRole/edit"
+      ],
+      "count": 3
+     }
+    ],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [],
+    "passed_controls": 17,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "dev-team-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/developers"
+      ]
+     },
+     {
+      "binding": "ci-bot-wild",
+      "role": "ci-wildcard",
+      "subjects": [
+       "ServiceAccount:ci/ci-bot"
+      ]
+     },
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     },
+     {
+      "binding": "helm-kube-system-traefik",
+      "role": "cluster-admin",
+      "subjects": [
+       "ServiceAccount:kube-system/helm-traefik"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

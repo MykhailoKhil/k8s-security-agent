@@ -1,0 +1,65 @@
+{
+ "description": "Human group and CI bot with cluster-admin or wildcard roles, plus k3s default bindings that are expected.",
+ "targets": [
+  "prod"
+ ],
+ "must_include": [
+  {
+   "id": "dev-team",
+   "any_of": [
+    "dev-team-admin",
+    "developers"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ]
+  },
+  {
+   "id": "ci-bot",
+   "any_of": [
+    "ci-bot",
+    "ci-wildcard"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ]
+  }
+ ],
+ "acceptable": [
+  {
+   "id": "secrets",
+   "any_of": [
+    "C-0015",
+    "KSV-0041",
+    "secrets"
+   ]
+  },
+  {
+   "id": "exec",
+   "any_of": [
+    "C-0002"
+   ]
+  }
+ ],
+ "must_not": [
+  {
+   "id": "k3s-default-traefik",
+   "match": [
+    "helm-kube-system-traefik"
+   ],
+   "above": "MEDIUM"
+  },
+  {
+   "id": "default-masters",
+   "match": [
+    "system:masters"
+   ],
+   "above": "MEDIUM"
+  }
+ ],
+ "must_have_not_checked": [
+  "node and control-plane"
+ ]
+}

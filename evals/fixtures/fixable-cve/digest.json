@@ -1,0 +1,100 @@
+{
+ "clusters": {
+  "edge": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 80.0,
+      "passed": 15,
+      "failed": 5,
+      "skipped": 6
+     },
+     {
+      "name": "MITRE",
+      "score": 85.0,
+      "passed": 13,
+      "failed": 3,
+      "skipped": 6
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0017",
+      "name": "Immutable container filesystem",
+      "severity": "LOW",
+      "resources": 3,
+      "examples": [
+       "edge/Deployment/gw"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "CRITICAL": 2,
+     "HIGH": 1,
+     "MEDIUM": 20
+    },
+    "misconfig_counts": {
+     "LOW": 3
+    },
+    "critical_high_vulns": [
+     {
+      "resource": "kube-system/Deployment/traefik",
+      "pkg": "github.com/traefik/traefik/v3",
+      "id": "CVE-2026-65600",
+      "severity": "CRITICAL",
+      "installed": "v3.6.13",
+      "fixed": "3.6.23"
+     },
+     {
+      "resource": "kube-system/Deployment/metrics-server",
+      "pkg": "google.golang.org/grpc",
+      "id": "CVE-2026-33186",
+      "severity": "CRITICAL",
+      "installed": "v1.72.0",
+      "fixed": "1.79.3"
+     },
+     {
+      "resource": "monitoring/Deployment/grafana",
+      "pkg": "libxyz",
+      "id": "CVE-2026-11111",
+      "severity": "HIGH",
+      "installed": "2.1",
+      "fixed": "none"
+     }
+    ],
+    "misconfigs": [],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [],
+    "passed_controls": 17,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

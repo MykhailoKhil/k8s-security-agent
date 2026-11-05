@@ -1,0 +1,134 @@
+{
+ "description": "Real digest from the k3d lab (workload cluster + argocd-lab repos).",
+ "targets": [
+  "k3d-workload-auditor",
+  "/work/argocd-lab-gitops",
+  "/work/argocd-lab-app"
+ ],
+ "must_include": [
+  {
+   "id": "argocd-manager",
+   "any_of": [
+    "argocd-manager"
+   ],
+   "severity": [
+    "MEDIUM",
+    "CRITICAL"
+   ]
+  },
+  {
+   "id": "traefik-cve",
+   "any_of": [
+    "CVE-2026-65600",
+    "traefik"
+   ],
+   "severity": [
+    "MEDIUM",
+    "CRITICAL"
+   ]
+  },
+  {
+   "id": "metrics-cve",
+   "any_of": [
+    "CVE-2026-33186",
+    "metrics-server"
+   ],
+   "severity": [
+    "MEDIUM",
+    "CRITICAL"
+   ]
+  },
+  {
+   "id": "netpol",
+   "any_of": [
+    "C-0030",
+    "network polic",
+    "networkpolic"
+   ],
+   "severity": [
+    "MEDIUM",
+    "HIGH"
+   ]
+  }
+ ],
+ "acceptable": [
+  {
+   "id": "secrets-rbac",
+   "any_of": [
+    "KSV-0041",
+    "C-0015",
+    "secrets"
+   ]
+  },
+  {
+   "id": "security-context",
+   "any_of": [
+    "C-0211",
+    "security context",
+    "root"
+   ]
+  },
+  {
+   "id": "limits",
+   "any_of": [
+    "limit"
+   ]
+  },
+  {
+   "id": "k6",
+   "any_of": [
+    "k6"
+   ]
+  },
+  {
+   "id": "seccomp",
+   "any_of": [
+    "seccomp"
+   ]
+  },
+  {
+   "id": "node-exporter",
+   "any_of": [
+    "node-exporter"
+   ]
+  },
+  {
+   "id": "cve-other",
+   "any_of": [
+    "CVE-"
+   ]
+  },
+  {
+   "id": "creds",
+   "any_of": [
+    "credential"
+   ]
+  },
+  {
+   "id": "pss",
+   "any_of": [
+    "pod security"
+   ]
+  }
+ ],
+ "must_not": [
+  {
+   "id": "default-masters",
+   "match": [
+    "system:masters"
+   ],
+   "above": "MEDIUM"
+  },
+  {
+   "id": "node-exporter-expected",
+   "match": [
+    "node-exporter"
+   ],
+   "above": "MEDIUM"
+  }
+ ],
+ "must_have_not_checked": [
+  "node and control-plane",
+  "git history"
+ ]
+}

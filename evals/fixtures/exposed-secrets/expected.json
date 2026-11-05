@@ -1,0 +1,50 @@
+{
+ "description": "Repo scan finds an AWS key and a private key committed in the working tree.",
+ "targets": [
+  "payments-gitops"
+ ],
+ "must_include": [
+  {
+   "id": "aws-key",
+   "any_of": [
+    "aws-access-key-id",
+    "prod.env"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ]
+  },
+  {
+   "id": "private-key",
+   "any_of": [
+    "private-key",
+    "key.pem"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ]
+  }
+ ],
+ "acceptable": [
+  {
+   "id": "readonly-fs",
+   "any_of": [
+    "KSV-0014",
+    "read-only",
+    "filesystem"
+   ]
+  },
+  {
+   "id": "creds",
+   "any_of": [
+    "C-0012"
+   ]
+  }
+ ],
+ "must_not": [],
+ "must_have_not_checked": [
+  "git history"
+ ]
+}

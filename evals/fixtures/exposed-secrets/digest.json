@@ -1,0 +1,85 @@
+{
+ "clusters": {},
+ "repos": {
+  "payments-gitops": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 90.0,
+      "passed": 20,
+      "failed": 2,
+      "skipped": 4
+     },
+     {
+      "name": "MITRE",
+      "score": 95.0,
+      "passed": 17,
+      "failed": 1,
+      "skipped": 4
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0012",
+      "name": "Applications credentials in configuration files",
+      "severity": "HIGH",
+      "resources": 1,
+      "examples": [
+       "config/prod.env"
+      ]
+     }
+    ]
+   },
+   "trivy config": {
+    "vuln_counts": {},
+    "misconfig_counts": {
+     "LOW": 3
+    },
+    "critical_high_vulns": [],
+    "misconfigs": [
+     {
+      "id": "KSV-0014",
+      "title": "Root file system is not read-only",
+      "severity": "LOW",
+      "resources": [
+       "deploy/api.yaml"
+      ],
+      "count": 1
+     }
+    ],
+    "secrets": []
+   },
+   "trivy fs": {
+    "vuln_counts": {},
+    "misconfig_counts": {},
+    "critical_high_vulns": [],
+    "misconfigs": [],
+    "secrets": [
+     {
+      "resource": "config/prod.env",
+      "rule": "aws-access-key-id",
+      "severity": "CRITICAL",
+      "file": "config/prod.env"
+     },
+     {
+      "resource": "deploy/tls/key.pem",
+      "rule": "private-key",
+      "severity": "HIGH",
+      "file": "deploy/tls/key.pem"
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ]
+}

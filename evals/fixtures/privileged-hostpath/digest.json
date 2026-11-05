@@ -1,0 +1,156 @@
+{
+ "clusters": {
+  "goat": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 38.0,
+      "passed": 7,
+      "failed": 14,
+      "skipped": 5
+     },
+     {
+      "name": "MITRE",
+      "score": 45.5,
+      "passed": 8,
+      "failed": 11,
+      "skipped": 5
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0057",
+      "name": "Privileged container",
+      "severity": "HIGH",
+      "resources": 2,
+      "examples": [
+       "default/Deployment/debug-shell",
+       "prod/DaemonSet/node-agent"
+      ]
+     },
+     {
+      "id": "C-0048",
+      "name": "HostPath mount",
+      "severity": "HIGH",
+      "resources": 2,
+      "examples": [
+       "default/Deployment/debug-shell",
+       "prod/DaemonSet/node-agent"
+      ]
+     },
+     {
+      "id": "C-0016",
+      "name": "Allow privilege escalation",
+      "severity": "MEDIUM",
+      "resources": 5,
+      "examples": [
+       "default/Deployment/debug-shell"
+      ]
+     },
+     {
+      "id": "C-0013",
+      "name": "Non-root containers",
+      "severity": "MEDIUM",
+      "resources": 9,
+      "examples": [
+       "default/Deployment/debug-shell"
+      ]
+     },
+     {
+      "id": "C-0017",
+      "name": "Immutable container filesystem",
+      "severity": "LOW",
+      "resources": 12,
+      "examples": [
+       "default/Deployment/web"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "HIGH": 3,
+     "MEDIUM": 10
+    },
+    "misconfig_counts": {
+     "HIGH": 2,
+     "MEDIUM": 2
+    },
+    "critical_high_vulns": [
+     {
+      "resource": "default/Deployment/debug-shell",
+      "pkg": "openssl",
+      "id": "CVE-2025-90001",
+      "severity": "HIGH",
+      "installed": "3.0.1",
+      "fixed": "3.0.9"
+     }
+    ],
+    "misconfigs": [
+     {
+      "id": "KSV-0017",
+      "title": "Privileged",
+      "severity": "HIGH",
+      "resources": [
+       "default/Deployment/debug-shell",
+       "prod/DaemonSet/node-agent"
+      ],
+      "count": 2
+     },
+     {
+      "id": "KSV-0023",
+      "title": "hostPath volumes",
+      "severity": "MEDIUM",
+      "resources": [
+       "default/Deployment/debug-shell",
+       "prod/DaemonSet/node-agent"
+      ],
+      "count": 2
+     }
+    ],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [
+     {
+      "id": "3",
+      "name": "Privileged Containers",
+      "severity": "HIGH",
+      "fails": 2
+     },
+     {
+      "id": "5",
+      "name": "HostPath Volumes",
+      "severity": "MEDIUM",
+      "fails": 2
+     }
+    ],
+    "passed_controls": 15,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}
