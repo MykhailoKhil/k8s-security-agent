@@ -3,33 +3,19 @@ Stage 1 (Python, parallel): run scanners, reduce to a digest. Stage 2 (one LLM c
 import asyncio
 import json
 import os
-import shutil
-import subprocess
 import sys
 import time
 from pathlib import Path
 
+from gitutil import CloneError, clone
 from history import annotate, diff, load_previous, now, save_run
 from render import render
 from scan import scan
 from triage import extract_json, triage
 
 
-
 def split(name: str) -> list[str]:
     return [x.strip() for x in os.environ.get(name, "").split(",") if x.strip()]
-
-
-def clone(urls: list[str], dest: Path) -> list[str]:
-    token = os.environ.get("GIT_TOKEN", "")
-    paths = []
-    for u in urls:
-        target = dest / u.rstrip("/").removesuffix(".git").rsplit("/", 1)[-1]
-        shutil.rmtree(target, ignore_errors=True)  # our own scratch dir; a persisted OUT_DIR must not break the next clone
-        auth = u.replace("https://", f"https://x-access-token:{token}@", 1) if token else u
-        subprocess.run(["git", "clone", "--depth", "1", "-q", auth, str(target)], check=True)
-        paths.append(str(target))
-    return paths
 
 
 async def main():
@@ -37,7 +23,10 @@ async def main():
     contexts, paths = split("K8S_CONTEXTS"), split("AUDIT_PATHS")
     out = Path(os.environ.get("OUT_DIR", "out")).resolve()
     out.mkdir(parents=True, exist_ok=True)
-    paths += clone(split("AUDIT_REPOS"), out / "repos")
+    try:
+        paths += clone(split("AUDIT_REPOS"), out / "repos", os.environ.get("GIT_TOKEN", ""))
+    except CloneError as e:
+        sys.exit(f"error: {e}")
     if not (contexts or paths):
         sys.exit("set K8S_CONTEXTS and/or AUDIT_PATHS/AUDIT_REPOS (see .env.example)")
 
@@ -93,4 +82,5 @@ async def main():
     print(f"report: {out / 'report.html'}")
 
 
-asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())
