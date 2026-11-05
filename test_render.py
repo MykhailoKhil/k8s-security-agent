@@ -13,5 +13,6 @@ out = render(d)
 assert "<script>alert" not in out and "<img src=x" not in out and "a: <b>" not in out  # escaped
 assert out.index("CRITICAL") < out.index("LOW")  # sorted by severity
 assert "n/a" in out and "71.2%" in out
+assert "$0.1, 90s" in render({"meta": {"cost_usd": 0.1, "seconds": 90}})
 render({})  # empty input must not crash
 print("render ok")

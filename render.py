@@ -57,10 +57,12 @@ def render(d: dict) -> str:
     )
     nc = "".join(f"<tr><td>{e(x.get('item'))}</td><td>{e(x.get('reason'))}</td></tr>" for x in d.get("not_checked", []))
     when = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    m = d.get("meta") or {}
+    run = f" &middot; run: ${e(m.get('cost_usd'))}, {e(m.get('seconds'))}s" if m else ""
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Kubernetes security audit</title>
 <style>{CSS}</style></head><body><main>
 <h1>Kubernetes security audit</h1>
-<div class="meta">{e(when)} &middot; {e(', '.join(map(str, d.get('targets', []))))} &middot; read-only</div>
+<div class="meta">{e(when)} &middot; {e(', '.join(map(str, d.get('targets', []))))} &middot; read-only{run}</div>
 <div class="cards">{cards}</div>
 <h2>Summary</h2><p>{e(d.get('summary'))}</p>
 <h2>Frameworks</h2><table><tr><th>Framework</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Score</th></tr>{fw}</table>
