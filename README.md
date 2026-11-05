@@ -75,7 +75,7 @@ Weekly CronJob by default (`schedule`). The chart creates no credentials and mou
 ```bash
 python test_evals.py                                  # offline: metric logic, fixture sanity, mutation tests, replay of recorded replies
 EVAL_MODE=live EVAL_RECORD=1 EVAL_RECORD_AS=recorded-mine EVAL_LABEL=mine .venv/bin/python evals/run_evals.py   # calls the API (~$0.2-0.5 for all 12)
-EVAL_REPLAY=recorded-baseline EVAL_LABEL=baseline .venv/bin/python evals/run_evals.py   # re-score any saved recording offline
+EVAL_REPLAY=recorded-mine EVAL_LABEL=mine .venv/bin/python evals/run_evals.py   # re-score a saved recording offline
 EVAL_CASES=real-lab,fixable-cve EVAL_OUT=evals/results-x .venv/bin/python evals/run_evals.py   # subset; EVAL_MODE defaults to recorded (offline)
 ```
 
@@ -98,7 +98,7 @@ EVAL_CASES=real-lab,fixable-cve EVAL_OUT=evals/results-x .venv/bin/python evals/
 | cost / latency per case | $0.028 / 17 s (real-lab: $0.10 / 33 s) |
 
 ### Phase 2: triage prompt changelog
-One change at a time, each re-run live on all 12 cases (replies saved as `recorded-<label>.json`, re-scored offline with the final scorer; `recorded.json` is the latest accepted run).
+One change at a time, each re-run live on all 12 cases (replies were saved as `recorded-<label>.json` and re-scored offline with the final scorer; only `recorded.json`, the latest accepted run, is kept in the tree. The per-change recordings and result files were trimmed to keep the repo small: **the tables are now the record**, and the files are still in git history, for example `git checkout a058cdc -- evals/` restores them).
 
 | change | valid | recall | precision | halluc | evidence grounded | confidence | must-not | avg cost | avg time |
 |---|---|---|---|---|---|---|---|---|---|
@@ -133,7 +133,7 @@ What changed and what it means:
 Real cluster (k3d workload + both repos, one run): 17 findings, 11 tool calls, 6 confirmed, 0 refuted, 11 unverified (7 outside the top 10, 4 image-CVE findings the tools cannot check); investigation added $0.15 and about 30 s to a $0.13 triage.
 
 Read this honestly:
-- **First run, before fixing my own fixtures:** accuracy 0.86 and 1 true finding wrongly refuted. Causes: the fake cluster had Pods but the findings named Deployments (so the lookup returned "not found"), one Secret finding was decidable from RBAC data after all, and my evidence check rejected a correct absence claim. I fixed the fixtures and the absence rule and re-ran; the first recordings are kept as `recorded-run1.json` and `evals/inv-results-run1.*`. The final numbers are on adjusted fixtures.
+- **First run, before fixing my own fixtures:** accuracy 0.86 and 1 true finding wrongly refuted. Causes: the fake cluster had Pods but the findings named Deployments (so the lookup returned "not found"), one Secret finding was decidable from RBAC data after all, and my evidence check rejected a correct absence claim. I fixed the fixtures and the absence rule and re-ran; the first recordings (`recorded-run1.json`, `evals/inv-results-run1.*`) are no longer in the tree but remain in git history (`git checkout a058cdc -- evals/`). The final numbers are on adjusted fixtures.
 - **The suite is small and hand-written** (31 findings, one model, one run per case) and the cluster is fake, so 100% here does not predict 100% on a real cluster. I did not find a failure mode worth a prompt change: a close copy of a real-run case where the model "confirmed" a Traefik CVE stayed `unverified` in 4 of 4 runs.
 - **What `confirmed` means:** the cluster state matches the finding (for a CVE finding: the vulnerable image is deployed), not that the issue is exploitable. A CVE's existence, image contents and Secret contents cannot be verified with these tools.
 - `who_can` is approximate (ignores apiGroups; shows `resourceNames` limits) and does not expand aggregated ClusterRoles.
@@ -142,7 +142,7 @@ How to read this honestly:
 - **The suite is saturated.** The current prompt scores 1.0 on everything, so these numbers show no headroom for Phase 2: they protect against regressions, they cannot yet show an improvement.
 - **Labels were adjusted after the first run:** I added the `acceptable` roll-ups (k3s default binding, medium CVE summaries, small misconfigs) after reading the first 8 cases' output, and fixed the hallucination detector's false positives (slashes in prose, ID lists, PSS counts). Raw first-pass numbers were 37% hallucinated, all of which were detector noise. The 4 hard cases were not relabeled.
 - **Detector limits:** names without a hyphen or a `Kind/` prefix, and counts the model derives by adding digest numbers, are not checked. Fixtures are hand-written in the digest shape; only `real-lab` is a real scan.
-- `evals/results-baseline.{json,md}` hold the per-case detail; table mode says "recorded" because the numbers are re-scored from the saved live replies.
+- The per-case detail files (`evals/results-*.{json,md}`) were trimmed too; running the evals regenerates equivalent ones. Table mode says "recorded" because the numbers were re-scored from saved live replies.
 
 ### Phase 4: run-to-run diff
 - **Identity:** a fingerprint per scanner item = `scope` (context or repo) + `rule` (control, KSV, CVE, secret rule, `ADMIN-BINDING`, ...) + canonical `namespace/Kind/name`. ReplicaSet and Pod names lose their generated suffixes, so a rollout is not "fixed + new". The same resource name in several overlays collapses into one item.
