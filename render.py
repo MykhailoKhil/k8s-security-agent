@@ -19,7 +19,7 @@ th,td{text-align:left;padding:8px 10px;border-bottom:1px solid #eceff3;vertical-
 th{background:#eef1f5}.badge{color:#fff;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:600}
 pre{background:#10151c;color:#e6edf3;padding:10px;border-radius:6px;overflow:auto;margin:6px 0 0;font-size:12px}
 details summary{cursor:pointer;color:#175cd3}.bar{height:8px;background:#e4e7ec;border-radius:4px;min-width:90px}
-.conf{color:#667}.bar i{display:block;height:8px;border-radius:4px;background:#2e7d32}
+.conf{color:#667}h3{margin:18px 0 6px}.bar i{display:block;height:8px;border-radius:4px;background:#2e7d32}
 """
 
 
@@ -50,7 +50,7 @@ def render(d: dict) -> str:
         f"<tr><td>{badge(f.get('severity', ''))}</td><td><b>{e(f.get('title'))}</b><br><small>{e(f.get('resource'))}</small></td>"
         f"<td>{e(', '.join(map(str, f.get('controls', []))))}</td><td>{e(f.get('evidence'))}"
         + (f" <small class=\"conf\">confidence: {e(f['confidence'])}</small>" if f.get("confidence") else "")
-        + _verified(f)
+        + _change(f) + _verified(f)
         + (f"<details><summary>Fix</summary><pre>{e(f['fix'])}</pre></details>" if f.get("fix") else "")
         + "</td></tr>"
         for f in findings
@@ -64,6 +64,7 @@ def render(d: dict) -> str:
     ref_section = (f"<h2>Refuted by investigation ({len(refuted)})</h2><table><tr><th>Severity</th><th>Finding</th><th>Why it is not real</th></tr>"
                    + "".join(f"<tr><td>{badge(f.get('severity', ''))}</td><td>{e(f.get('title'))}<br><small>{e(f.get('resource'))}</small></td><td>{e(f.get('verification_evidence'))}</td></tr>" for f in refuted)
                    + "</table>") if refuted else ""
+    diff_section = _diff_section(d.get("diff"))
     when = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     m = d.get("meta") or {}
     run = f" &middot; run: ${e(m.get('cost_usd'))}, {e(m.get('seconds'))}s" if m else ""
@@ -73,10 +74,47 @@ def render(d: dict) -> str:
 <div class="meta">{e(when)} &middot; {e(', '.join(map(str, d.get('targets', []))))} &middot; read-only{run}</div>
 <div class="cards">{cards}</div>
 <h2>Summary</h2><p>{e(d.get('summary'))}</p>
-<h2>Frameworks</h2><table><tr><th>Framework</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Score</th></tr>{fw}</table>
+{diff_section}<h2>Frameworks</h2><table><tr><th>Framework</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Score</th></tr>{fw}</table>
 <h2>Findings</h2><table><tr><th>Severity</th><th>Finding</th><th>Controls</th><th>Evidence / fix</th></tr>{rows}</table>
 {ref_section}<h2>Not checked</h2><table><tr><th>Item</th><th>Reason</th></tr>{nc}</table>
 </main></body></html>"""
+
+
+def _change(f: dict) -> str:
+    c = f.get("change")
+    if not c:
+        return ""
+    label = {"new": "NEW", "persisting": "persisting", "partly new": f"partly new ({c['new_items']} of {c['items']} items)"}.get(c["status"], "")
+    return f' <small class="conf">{e(label)}</small>' if label else ""
+
+
+def _rows(groups: list[dict], resources: bool = True) -> str:
+    return "".join(
+        f"<tr><td>{badge(g['severity'])}</td><td>{e(g['rule'])}</td><td>{e(g['title'])}</td><td>{e(g['count'])}"
+        + (f"<br><small>{e('; '.join(g['resources']))}{' …' if g['count'] > len(g['resources']) else ''}</small>" if resources else "")
+        + "</td></tr>" for g in groups)
+
+
+def _diff_section(df: dict | None) -> str:
+    if not df:
+        return ""
+    if df.get("previous") is None:
+        return f"<h2>Changes since last run</h2><p>First run: baseline of {e(df.get('items', 0))} scanner items recorded. The next run shows what is new, fixed and persisting.</p>"
+    n = df["counts"]
+    th = "<tr><th>Severity</th><th>Rule</th><th>What</th><th>Resources</th></tr>"
+    notes = []
+    if df.get("no_baseline"):
+        notes.append(f"{e(df['no_baseline'])} items are from targets that were not scanned last time (no baseline)")
+    if df.get("not_comparable"):
+        notes.append(f"{e(df['not_comparable'])} items from last run cannot be compared (that scan did not run this time)")
+    return (f"<h2>Changes since {e(df['previous'])}</h2><div class=\"cards\">"
+            f"<div class=\"card\" style=\"border-top:4px solid #b42318\"><b>{n['new']}</b>New</div>"
+            f"<div class=\"card\" style=\"border-top:4px solid #2e7d32\"><b>{n['fixed']}</b>Fixed</div>"
+            f"<div class=\"card\" style=\"border-top:4px solid #667\"><b>{n['persisting']}</b>Persisting</div></div>"
+            + (f"<p class=\"meta\">{'; '.join(notes)}</p>" if notes else "")
+            + (f"<h3>New</h3><table>{th}{_rows(df['new'])}</table>" if df["new"] else "")
+            + (f"<h3>Fixed</h3><table>{th}{_rows(df['fixed'])}</table>" if df["fixed"] else "")
+            + (f"<details><summary>Persisting ({n['persisting']} items in {len(df['persisting'])} rules)</summary><table>{th}{_rows(df['persisting'])}</table></details>" if df["persisting"] else ""))
 
 
 def _verified(f: dict) -> str:

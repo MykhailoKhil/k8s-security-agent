@@ -1,8 +1,10 @@
 """Deterministic scan stage: run every scanner in parallel, reduce the output to a small digest for the LLM.
 The LLM never runs commands or reads raw scanner JSON (that was most of the tokens and wall time)."""
 import asyncio
+import hashlib
 import json
 import os
+import re
 from collections import defaultdict
 from pathlib import Path
 
@@ -58,7 +60,7 @@ def sev_name(c: dict) -> str:
 def reduce_ks(d: dict) -> dict:
     failed_res = defaultdict(list)
     for r in d.get("results", []):
-        label = "/".join(r["resourceID"].strip("/").split("/")[:3])
+        label = res_key(r["resourceID"])
         for c in r.get("controls", []):
             if c.get("status", {}).get("status") == "failed":
                 failed_res[c["controlID"]].append(label)
@@ -83,7 +85,7 @@ def reduce_trivy(d: dict) -> dict:
     items = []  # (resource label, Results list)
     rows = d.get("Resources") or d.get("Findings")  # key name differs between trivy versions
     if rows is not None:
-        items = [(f"{f.get('Namespace', '')}/{f.get('Kind')}/{f.get('Name')}", f.get("Results") or []) for f in rows]
+        items = [(trivy_label(f), f.get("Results") or []) for f in rows]
     else:
         items = [(r.get("Target", ""), [r]) for r in d.get("Results", [])]
     counts = {"vuln": defaultdict(int), "misconf": defaultdict(int)}
@@ -121,6 +123,82 @@ def reduce_pss(d: dict) -> dict:
 REDUCERS = {"ks": reduce_ks, "trivy": reduce_trivy, "pss": reduce_pss}
 
 
+# ---------------------------------------------------------------- stable resource keys and the item inventory (Phase 4)
+KIND_RE = re.compile(r"^[A-Z][A-Za-z]+$")
+VERSION_RE = re.compile(r"^v\d+([a-z]+\d+)?$")
+
+
+def norm_name(kind: str, name: str) -> str:
+    """Drop generated suffixes so a rollout does not look like a fixed + a new resource."""
+    if kind == "ReplicaSet":
+        return re.sub(r"-[a-z0-9]{8,10}$", "", name)
+    if kind == "Pod":
+        return re.sub(r"-[a-z0-9]{5}$", "", re.sub(r"-[a-z0-9]{8,10}-[a-z0-9]{5}$", "", name))
+    return name
+
+
+def res_key(rid: str) -> str:
+    """Canonical `namespace/Kind/name` from kubescape/trivy resource IDs (many shapes). Falls back to the raw ID."""
+    t = rid.split("/")
+    for i, x in enumerate(t):
+        if KIND_RE.match(x) and i + 1 < len(t) and t[i + 1]:
+            ns = t[i - 1] if i > 0 and t[i - 1] and not VERSION_RE.match(t[i - 1]) and "=" not in t[i - 1] else ""
+            return f"{ns}/{x}/{norm_name(x, t[i + 1])}"
+    return rid
+
+
+def trivy_label(f: dict) -> str:
+    return f"{f.get('Namespace') or ''}/{f.get('Kind')}/{norm_name(str(f.get('Kind')), str(f.get('Name')))}"
+
+
+def fingerprint(scope: str, rule: str, resource: str) -> str:
+    return hashlib.sha1(f"{scope}|{rule}|{resource}".encode()).hexdigest()[:12]
+
+
+def items_ks(d: dict) -> list[tuple]:
+    ctrls = d.get("summaryDetails", {}).get("controls", {})
+    out = set()
+    for r in d.get("results", []):
+        key = res_key(r["resourceID"])
+        for c in r.get("controls", []):
+            if c.get("status", {}).get("status") == "failed":
+                m = ctrls.get(c["controlID"], {})
+                out.add((c["controlID"], key, sev_name(m), m.get("name") or c.get("name") or ""))
+    return sorted(out)
+
+
+def items_trivy(d: dict) -> list[tuple]:
+    rows = d.get("Resources") or d.get("Findings")
+    groups = [(trivy_label(f), f.get("Results") or []) for f in rows] if rows is not None else [(r.get("Target", ""), [r]) for r in d.get("Results", [])]
+    out = set()
+    for label, results in groups:
+        for r in results:
+            for v in r.get("Vulnerabilities") or []:
+                if v.get("Severity") in ("CRITICAL", "HIGH"):
+                    out.add((v.get("VulnerabilityID"), f"{label}:{v.get('PkgName')}", v["Severity"], f"{v.get('PkgName')} {v.get('InstalledVersion')}"))
+            for m in r.get("Misconfigurations") or []:
+                if m.get("Status") == "FAIL":
+                    out.add((m.get("ID"), label, m.get("Severity", "UNKNOWN"), m.get("Title") or ""))
+            for sec in r.get("Secrets") or []:
+                out.add((sec.get("RuleID"), f"{label}:{r.get('Target')}", sec.get("Severity", "UNKNOWN"), "secret"))
+    return sorted(out, key=str)
+
+
+def items_pss(d: dict) -> list[tuple]:
+    return sorted((f"PSS-{c['ID']}", "(cluster)", c["Severity"], c["Name"]) for c in d.get("SummaryControls", []) if c.get("TotalFail"))
+
+
+def items_rbac(x: dict) -> list[tuple]:
+    out = [("ADMIN-BINDING", f"{b['binding']}->{b['role']}", "HIGH", "cluster-admin-equivalent binding") for b in x.get("admin_bindings", [])]
+    out += [("ARGO-WILDCARD-PROJECT", p["project"], "MEDIUM", "AppProject with wildcard destination, sources or cluster resources")
+            for p in x.get("argo_projects") or [] if p["wildcard_destination"] or p["wildcard_sources"] or p["all_cluster_resources"]]
+    out += [("ARGO-APP-RISKY", a["app"], "LOW", f"project {a['project']}, revision {a['revision']}") for a in x.get("argo_apps_risky") or []]
+    return sorted(out, key=str)
+
+
+ITEM_FN = {"ks": items_ks, "trivy": items_trivy, "pss": items_pss}
+
+
 async def kubectl_json(ctx: str, *args: str):
     p = await asyncio.create_subprocess_exec("kubectl", "--context", ctx, *args, "-o", "json",
                                              stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.DEVNULL)
@@ -154,10 +232,19 @@ async def rbac_and_argo(ctx: str) -> dict:
     return res
 
 
-async def scan(contexts: list[str], paths: list[str], out: Path, timeout: int) -> dict:
+async def scan(contexts: list[str], paths: list[str], out: Path, timeout: int) -> tuple[dict, list[dict], list[str]]:
+    """Returns (digest for the model, full item inventory with fingerprints, list of 'scope|source' that produced data)."""
     todo = jobs(contexts, paths, out)
     results = await asyncio.gather(*(run(argv, timeout) for _, _, argv in todo), *(rbac_and_argo(c) for c in contexts))
     digest = {"clusters": {}, "repos": {}, "not_checked": []}
+    items, scanned = {}, set()
+
+    def add(scope, source, rows):
+        for rule, resource, sev, title in rows:
+            fp = fingerprint(scope, str(rule), resource)
+            items[fp] = {"fp": fp, "scope": scope, "source": source, "rule": str(rule), "resource": resource, "severity": sev, "title": title}
+        scanned.add(f"{scope}|{source}")
+
     for (kind, label, argv), (rc, tail) in zip(todo, results):
         f = outfile(argv)
         # trivy exits non-zero only on errors here (no --exit-code); kubescape returns 0 unless a threshold is set
@@ -165,10 +252,15 @@ async def scan(contexts: list[str], paths: list[str], out: Path, timeout: int) -
             digest["not_checked"].append({"item": label, "reason": tail.strip().splitlines()[-1] if tail.strip() else f"exit {rc}"})
             continue
         key = label.split()[-1]
+        source = label.rsplit(" ", 1)[0]
+        data = json.loads(f.read_text())
         bucket = digest["clusters"] if key in contexts else digest["repos"]
-        bucket.setdefault(key, {})[label.rsplit(" ", 1)[0]] = REDUCERS[kind](json.loads(f.read_text()))
+        bucket.setdefault(key, {})[source] = REDUCERS[kind](data)
+        add(key, source, ITEM_FN[kind](data))
     for c, extra in zip(contexts, results[len(todo):]):
         digest["clusters"].setdefault(c, {})["rbac_and_argo"] = extra
+        if extra:
+            add(c, "rbac_and_argo", items_rbac(extra))
     digest["not_checked"].append({"item": "node and control-plane CIS checks", "reason": "need a privileged node-collector pod; the audit identity is read-only"})
     digest["not_checked"].append({"item": "git history", "reason": "secrets removed from history are not scanned"})
-    return digest
+    return digest, sorted(items.values(), key=lambda i: (i["scope"], i["rule"], i["resource"])), sorted(scanned)
