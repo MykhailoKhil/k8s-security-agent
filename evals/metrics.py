@@ -5,8 +5,9 @@ import re
 SEV = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]  # ascending
 ID_RE = re.compile(r"\b(?:C-\d{4}|KSV-?\d+|CVE-\d{4}-\d+|GHSA-[\w-]+|AVD-[\w-]+)\b", re.I)
 VER_RE = re.compile(r"(?<![\w.-])v?\d+\.\d+(?:\.\d+)*(?![\w.-])")
-PATH_RE = re.compile(r"[\w.:-]*/[\w.:/-]+")           # ns/Kind/name style
+K8S_PATH = re.compile(r"(?<![\w./-])(?:([a-z0-9][\w.-]*)/)?([A-Z][A-Za-z]+)/([a-z0-9][\w.-]*)")  # [ns/]Kind/name, Kind capitalised
 NAME_RE = re.compile(r"[A-Za-z0-9_.:]+(?:-[A-Za-z0-9_.:]+)+")  # hyphenated names, only taken from 'resource'
+PROSE = {"cluster-wide", "auto-mounting", "read-only", "non-root", "default-deny", "multi-tenant", "kube-wide", "namespace-wide"}  # hyphenated English, not names
 NUM_RE = re.compile(r"(?<![\w.-])\d{2,}(?![\w.-])")   # integers >= 10 stated as facts
 
 
@@ -60,12 +61,13 @@ def untraceable(f: dict, digest_text: str) -> list[str]:
     for t in VER_RE.findall(claim):
         if t.lower().lstrip("v") not in dl:
             bad.append(t)
-    for t in PATH_RE.findall(claim + " " + res):
-        t = t.strip(".,;:()'\"`")
-        if len(t) > 3 and t.lower() not in dl and t.lower().strip("/") not in dl:
-            bad.append(t)
+    for ns, _kind, name in K8S_PATH.findall(claim + " " + res):
+        for t in (ns.strip(".:,;"), name.strip(".:,;")):  # check the names, not the exact path: "ClusterRoleBinding/argocd-manager" is a fair abbreviation
+            if t and len(t) > 3 and t.lower() not in dl:
+                bad.append(t)
     for t in NAME_RE.findall(res):
-        if len(t) > 3 and t.lower() not in dl:
+        t = t.strip(".:,;")
+        if len(t) > 3 and t.lower() not in dl and t.lower() not in PROSE:
             bad.append(t)
     for t in NUM_RE.findall(claim):
         if t not in ints:
@@ -80,13 +82,16 @@ def framework_errors(data: dict, digest: dict) -> list[str]:
             if "frameworks" in o and isinstance(o["frameworks"], list):
                 for fw in o["frameworks"]:
                     truth.setdefault(str(fw.get("name", "")).lower(), []).append(fw)
+            if "passed_controls" in o and isinstance(o.get("failed"), list):  # trivy PSS summary
+                n = len(o["failed"])
+                truth.setdefault("pss", []).append({"passed": o["passed_controls"], "failed": n, "skipped": o.get("total_controls", 0) - o["passed_controls"] - n})
             for v in o.values():
                 walk(v)
     walk(digest)
     errs = []
     for fw in data.get("frameworks") or []:
         name = str(fw.get("name", "")).lower()
-        cands = [v for k, vs in truth.items() if name.startswith(k) for v in vs]
+        cands = [v for k, vs in truth.items() if name.startswith(k) or (k == "pss" and ("pss" in name or "pod security" in name)) for v in vs]
         if not any(all(fw.get(k) == c.get(k) for k in ("passed", "failed", "skipped") if k in fw) and
                    (fw.get("score") is None or abs(float(fw["score"]) - float(c.get("score", -1))) < 0.11) for c in cands):
             errs.append(f"{fw.get('name')}: {fw.get('passed')}/{fw.get('failed')}/{fw.get('skipped')} score {fw.get('score')} not in digest")
@@ -126,7 +131,11 @@ def score_case(data, digest: dict, expected: dict) -> dict:
     violations = []
     for m in expected.get("must_not", []):
         for i, f in enumerate(findings):
-            if not matches(f, m["match"]) or any(matches(f, x["any_of"]) for x in inc):
+            if not matches(f, m["match"]):
+                continue
+            # severity-ceiling rules skip findings that are also an expected item (a merged finding may mention a default binding);
+            # phrase bans (above is None) always apply
+            if m.get("above") is not None and any(matches(f, x["any_of"]) for x in inc):
                 continue
             if m.get("forbid_in_fix"):
                 if re.search(m["forbid_in_fix"], str(f.get("fix", ""))):

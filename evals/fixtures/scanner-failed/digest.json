@@ -1,0 +1,70 @@
+{
+ "clusters": {
+  "prod": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 72.0,
+      "passed": 15,
+      "failed": 6,
+      "skipped": 5
+     },
+     {
+      "name": "MITRE",
+      "score": 74.0,
+      "passed": 13,
+      "failed": 4,
+      "skipped": 5
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0030",
+      "name": "Ingress and Egress blocked",
+      "severity": "MEDIUM",
+      "resources": 8,
+      "examples": [
+       "shop/Deployment/web"
+      ]
+     },
+     {
+      "id": "C-0013",
+      "name": "Non-root containers",
+      "severity": "MEDIUM",
+      "resources": 5,
+      "examples": [
+       "shop/Deployment/web"
+      ]
+     }
+    ]
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "trivy k8s prod",
+   "reason": "FATAL unable to initialize a Kubernetes client: context deadline exceeded"
+  },
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

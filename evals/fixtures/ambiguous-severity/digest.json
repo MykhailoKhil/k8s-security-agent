@@ -1,0 +1,112 @@
+{
+ "clusters": {
+  "prod": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 55.0,
+      "passed": 8,
+      "failed": 13,
+      "skipped": 5
+     },
+     {
+      "name": "MITRE",
+      "score": 58.0,
+      "passed": 9,
+      "failed": 11,
+      "skipped": 5
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0041",
+      "name": "HostNetwork access",
+      "severity": "HIGH",
+      "resources": 3,
+      "examples": [
+       "monitoring/DaemonSet/kps-prometheus-node-exporter",
+       "kube-system/DaemonSet/svclb-traefik",
+       "shop/Deployment/checkout"
+      ]
+     },
+     {
+      "id": "C-0038",
+      "name": "Host PID/IPC privileges",
+      "severity": "HIGH",
+      "resources": 1,
+      "examples": [
+       "monitoring/DaemonSet/kps-prometheus-node-exporter"
+      ]
+     },
+     {
+      "id": "C-0046",
+      "name": "Insecure capabilities",
+      "severity": "HIGH",
+      "resources": 1,
+      "examples": [
+       "kube-system/DaemonSet/svclb-traefik"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "MEDIUM": 3
+    },
+    "misconfig_counts": {
+     "HIGH": 3
+    },
+    "critical_high_vulns": [],
+    "misconfigs": [
+     {
+      "id": "KSV-0009",
+      "title": "Access to host network",
+      "severity": "HIGH",
+      "resources": [
+       "monitoring/DaemonSet/kps-prometheus-node-exporter",
+       "kube-system/DaemonSet/svclb-traefik",
+       "shop/Deployment/checkout"
+      ],
+      "count": 3
+     }
+    ],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [
+     {
+      "id": "2",
+      "name": "Host Namespaces",
+      "severity": "HIGH",
+      "fails": 3
+     }
+    ],
+    "passed_controls": 16,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

@@ -43,6 +43,29 @@
    "any_of": [
     "seccomp"
    ]
+  },
+  {
+   "id": "default-binding",
+   "any_of": [
+    "system:masters",
+    "platform default",
+    "platform cluster-admin"
+   ]
+  },
+  {
+   "id": "vuln-rollup",
+   "any_of": [
+    "vulnerabilit",
+    "cves"
+   ]
+  },
+  {
+   "id": "minor-misconfig",
+   "any_of": [
+    "misconfiguration",
+    "healthcheck",
+    "untrusted-registry"
+   ]
   }
  ],
  "must_not": [],

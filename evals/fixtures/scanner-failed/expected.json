@@ -1,0 +1,63 @@
+{
+ "description": "trivy k8s failed; there is no vulnerability data. The report must flag it and not claim a clean image scan.",
+ "targets": [
+  "prod"
+ ],
+ "acceptable": [
+  {
+   "id": "default-binding",
+   "any_of": [
+    "system:masters",
+    "platform default",
+    "platform cluster-admin"
+   ]
+  },
+  {
+   "id": "vuln-rollup",
+   "any_of": [
+    "vulnerabilit",
+    "cves"
+   ]
+  },
+  {
+   "id": "minor-misconfig",
+   "any_of": [
+    "misconfiguration",
+    "healthcheck",
+    "untrusted-registry"
+   ]
+  }
+ ],
+ "must_include": [
+  {
+   "id": "netpol",
+   "any_of": [
+    "C-0030",
+    "network polic",
+    "networkpolic"
+   ],
+   "severity": [
+    "MEDIUM",
+    "HIGH"
+   ]
+  }
+ ],
+ "must_not": [
+  {
+   "id": "claimed-clean-images",
+   "match": [
+    "no vulnerabilit",
+    "no cves",
+    "no critical",
+    "vulnerability scan passed",
+    "images are clean",
+    "no image"
+   ],
+   "above": null
+  }
+ ],
+ "must_have_not_checked": [
+  "trivy k8s",
+  "node and control-plane"
+ ]
+}

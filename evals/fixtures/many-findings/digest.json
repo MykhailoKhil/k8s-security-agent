@@ -1,0 +1,458 @@
+{
+ "clusters": {
+  "big": {
+   "kubescape": {
+    "frameworks": [
+     {
+      "name": "NSA",
+      "score": 40.0,
+      "passed": 5,
+      "failed": 45,
+      "skipped": 5
+     },
+     {
+      "name": "MITRE",
+      "score": 42.0,
+      "passed": 6,
+      "failed": 40,
+      "skipped": 5
+     }
+    ],
+    "failed_controls": [
+     {
+      "id": "C-0057",
+      "name": "Privileged container",
+      "severity": "CRITICAL",
+      "resources": 2,
+      "examples": [
+       "core/DaemonSet/agent"
+      ]
+     },
+     {
+      "id": "C-0048",
+      "name": "HostPath mount",
+      "severity": "HIGH",
+      "resources": 2,
+      "examples": [
+       "core/DaemonSet/agent"
+      ]
+     },
+     {
+      "id": "C-0300",
+      "name": "Synthetic control 0",
+      "severity": "LOW",
+      "resources": 3,
+      "examples": [
+       "app0/Deployment/svc0"
+      ]
+     },
+     {
+      "id": "C-0301",
+      "name": "Synthetic control 1",
+      "severity": "MEDIUM",
+      "resources": 4,
+      "examples": [
+       "app1/Deployment/svc1"
+      ]
+     },
+     {
+      "id": "C-0302",
+      "name": "Synthetic control 2",
+      "severity": "MEDIUM",
+      "resources": 5,
+      "examples": [
+       "app2/Deployment/svc2"
+      ]
+     },
+     {
+      "id": "C-0303",
+      "name": "Synthetic control 3",
+      "severity": "LOW",
+      "resources": 6,
+      "examples": [
+       "app3/Deployment/svc3"
+      ]
+     },
+     {
+      "id": "C-0304",
+      "name": "Synthetic control 4",
+      "severity": "MEDIUM",
+      "resources": 7,
+      "examples": [
+       "app4/Deployment/svc4"
+      ]
+     },
+     {
+      "id": "C-0305",
+      "name": "Synthetic control 5",
+      "severity": "MEDIUM",
+      "resources": 8,
+      "examples": [
+       "app5/Deployment/svc5"
+      ]
+     },
+     {
+      "id": "C-0306",
+      "name": "Synthetic control 6",
+      "severity": "LOW",
+      "resources": 9,
+      "examples": [
+       "app6/Deployment/svc6"
+      ]
+     },
+     {
+      "id": "C-0307",
+      "name": "Synthetic control 7",
+      "severity": "MEDIUM",
+      "resources": 10,
+      "examples": [
+       "app7/Deployment/svc7"
+      ]
+     },
+     {
+      "id": "C-0308",
+      "name": "Synthetic control 8",
+      "severity": "MEDIUM",
+      "resources": 11,
+      "examples": [
+       "app8/Deployment/svc8"
+      ]
+     },
+     {
+      "id": "C-0309",
+      "name": "Synthetic control 9",
+      "severity": "LOW",
+      "resources": 12,
+      "examples": [
+       "app9/Deployment/svc9"
+      ]
+     },
+     {
+      "id": "C-0310",
+      "name": "Synthetic control 10",
+      "severity": "MEDIUM",
+      "resources": 13,
+      "examples": [
+       "app10/Deployment/svc10"
+      ]
+     },
+     {
+      "id": "C-0311",
+      "name": "Synthetic control 11",
+      "severity": "MEDIUM",
+      "resources": 14,
+      "examples": [
+       "app11/Deployment/svc11"
+      ]
+     },
+     {
+      "id": "C-0312",
+      "name": "Synthetic control 12",
+      "severity": "LOW",
+      "resources": 15,
+      "examples": [
+       "app12/Deployment/svc12"
+      ]
+     },
+     {
+      "id": "C-0313",
+      "name": "Synthetic control 13",
+      "severity": "MEDIUM",
+      "resources": 16,
+      "examples": [
+       "app13/Deployment/svc13"
+      ]
+     },
+     {
+      "id": "C-0314",
+      "name": "Synthetic control 14",
+      "severity": "MEDIUM",
+      "resources": 17,
+      "examples": [
+       "app14/Deployment/svc14"
+      ]
+     },
+     {
+      "id": "C-0315",
+      "name": "Synthetic control 15",
+      "severity": "LOW",
+      "resources": 18,
+      "examples": [
+       "app15/Deployment/svc15"
+      ]
+     },
+     {
+      "id": "C-0316",
+      "name": "Synthetic control 16",
+      "severity": "MEDIUM",
+      "resources": 19,
+      "examples": [
+       "app16/Deployment/svc16"
+      ]
+     },
+     {
+      "id": "C-0317",
+      "name": "Synthetic control 17",
+      "severity": "MEDIUM",
+      "resources": 20,
+      "examples": [
+       "app17/Deployment/svc17"
+      ]
+     },
+     {
+      "id": "C-0318",
+      "name": "Synthetic control 18",
+      "severity": "LOW",
+      "resources": 21,
+      "examples": [
+       "app18/Deployment/svc18"
+      ]
+     },
+     {
+      "id": "C-0319",
+      "name": "Synthetic control 19",
+      "severity": "MEDIUM",
+      "resources": 22,
+      "examples": [
+       "app19/Deployment/svc19"
+      ]
+     },
+     {
+      "id": "C-0320",
+      "name": "Synthetic control 20",
+      "severity": "MEDIUM",
+      "resources": 23,
+      "examples": [
+       "app20/Deployment/svc20"
+      ]
+     },
+     {
+      "id": "C-0321",
+      "name": "Synthetic control 21",
+      "severity": "LOW",
+      "resources": 24,
+      "examples": [
+       "app21/Deployment/svc21"
+      ]
+     },
+     {
+      "id": "C-0322",
+      "name": "Synthetic control 22",
+      "severity": "MEDIUM",
+      "resources": 25,
+      "examples": [
+       "app22/Deployment/svc22"
+      ]
+     },
+     {
+      "id": "C-0323",
+      "name": "Synthetic control 23",
+      "severity": "MEDIUM",
+      "resources": 26,
+      "examples": [
+       "app23/Deployment/svc23"
+      ]
+     },
+     {
+      "id": "C-0324",
+      "name": "Synthetic control 24",
+      "severity": "LOW",
+      "resources": 27,
+      "examples": [
+       "app24/Deployment/svc24"
+      ]
+     },
+     {
+      "id": "C-0325",
+      "name": "Synthetic control 25",
+      "severity": "MEDIUM",
+      "resources": 28,
+      "examples": [
+       "app25/Deployment/svc25"
+      ]
+     },
+     {
+      "id": "C-0326",
+      "name": "Synthetic control 26",
+      "severity": "MEDIUM",
+      "resources": 29,
+      "examples": [
+       "app26/Deployment/svc26"
+      ]
+     },
+     {
+      "id": "C-0327",
+      "name": "Synthetic control 27",
+      "severity": "LOW",
+      "resources": 30,
+      "examples": [
+       "app27/Deployment/svc27"
+      ]
+     },
+     {
+      "id": "C-0328",
+      "name": "Synthetic control 28",
+      "severity": "MEDIUM",
+      "resources": 31,
+      "examples": [
+       "app28/Deployment/svc28"
+      ]
+     },
+     {
+      "id": "C-0329",
+      "name": "Synthetic control 29",
+      "severity": "MEDIUM",
+      "resources": 32,
+      "examples": [
+       "app29/Deployment/svc29"
+      ]
+     },
+     {
+      "id": "C-0330",
+      "name": "Synthetic control 30",
+      "severity": "LOW",
+      "resources": 33,
+      "examples": [
+       "app30/Deployment/svc30"
+      ]
+     },
+     {
+      "id": "C-0331",
+      "name": "Synthetic control 31",
+      "severity": "MEDIUM",
+      "resources": 34,
+      "examples": [
+       "app31/Deployment/svc31"
+      ]
+     },
+     {
+      "id": "C-0332",
+      "name": "Synthetic control 32",
+      "severity": "MEDIUM",
+      "resources": 35,
+      "examples": [
+       "app32/Deployment/svc32"
+      ]
+     },
+     {
+      "id": "C-0333",
+      "name": "Synthetic control 33",
+      "severity": "LOW",
+      "resources": 36,
+      "examples": [
+       "app33/Deployment/svc33"
+      ]
+     },
+     {
+      "id": "C-0334",
+      "name": "Synthetic control 34",
+      "severity": "MEDIUM",
+      "resources": 37,
+      "examples": [
+       "app34/Deployment/svc34"
+      ]
+     },
+     {
+      "id": "C-0335",
+      "name": "Synthetic control 35",
+      "severity": "MEDIUM",
+      "resources": 38,
+      "examples": [
+       "app35/Deployment/svc35"
+      ]
+     },
+     {
+      "id": "C-0336",
+      "name": "Synthetic control 36",
+      "severity": "LOW",
+      "resources": 39,
+      "examples": [
+       "app36/Deployment/svc36"
+      ]
+     },
+     {
+      "id": "C-0337",
+      "name": "Synthetic control 37",
+      "severity": "MEDIUM",
+      "resources": 40,
+      "examples": [
+       "app37/Deployment/svc37"
+      ]
+     },
+     {
+      "id": "C-0338",
+      "name": "Synthetic control 38",
+      "severity": "MEDIUM",
+      "resources": 41,
+      "examples": [
+       "app38/Deployment/svc38"
+      ]
+     },
+     {
+      "id": "C-0339",
+      "name": "Synthetic control 39",
+      "severity": "LOW",
+      "resources": 42,
+      "examples": [
+       "app39/Deployment/svc39"
+      ]
+     }
+    ]
+   },
+   "trivy k8s": {
+    "vuln_counts": {
+     "CRITICAL": 1
+    },
+    "misconfig_counts": {
+     "HIGH": 1
+    },
+    "critical_high_vulns": [
+     {
+      "resource": "core/DaemonSet/agent",
+      "pkg": "openssl",
+      "id": "CVE-2025-90002",
+      "severity": "CRITICAL",
+      "installed": "1.1.1",
+      "fixed": "3.0.13"
+     }
+    ],
+    "misconfigs": [],
+    "secrets": []
+   },
+   "trivy pss": {
+    "failed": [
+     {
+      "id": "3",
+      "name": "Privileged Containers",
+      "severity": "HIGH",
+      "fails": 2
+     }
+    ],
+    "passed_controls": 16,
+    "total_controls": 17
+   },
+   "rbac_and_argo": {
+    "admin_bindings": [
+     {
+      "binding": "cluster-admin",
+      "role": "cluster-admin",
+      "subjects": [
+       "Group:/system:masters"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "not_checked": [
+  {
+   "item": "node and control-plane CIS checks",
+   "reason": "need a privileged node-collector pod; the audit identity is read-only"
+  },
+  {
+   "item": "git history",
+   "reason": "secrets removed from history are not scanned"
+  }
+ ],
+ "repos": {}
+}

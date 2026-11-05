@@ -1,0 +1,61 @@
+{
+ "description": "40 failed controls plus two critical issues: output must stay within 25 findings and keep the critical ones first.",
+ "targets": [
+  "big"
+ ],
+ "acceptable": [
+  {
+   "id": "default-binding",
+   "any_of": [
+    "system:masters",
+    "platform default",
+    "platform cluster-admin"
+   ]
+  },
+  {
+   "id": "vuln-rollup",
+   "any_of": [
+    "vulnerabilit",
+    "cves"
+   ]
+  },
+  {
+   "id": "minor-misconfig",
+   "any_of": [
+    "misconfiguration",
+    "healthcheck",
+    "untrusted-registry"
+   ]
+  }
+ ],
+ "must_include": [
+  {
+   "id": "privileged",
+   "any_of": [
+    "C-0057"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ]
+  },
+  {
+   "id": "cve",
+   "any_of": [
+    "CVE-2025-90002"
+   ],
+   "severity": [
+    "HIGH",
+    "CRITICAL"
+   ],
+   "fix_contains": [
+    "3.0.13"
+   ]
+  }
+ ],
+ "must_not": [],
+ "max_findings": 25,
+ "must_have_not_checked": [
+  "node and control-plane"
+ ]
+}

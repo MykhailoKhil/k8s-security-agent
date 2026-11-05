@@ -8,7 +8,7 @@ Read-only audit of live clusters and manifest repos. Produces `report.html` (ope
 ## How it works
 1. **Scan** (`scan.py`, Python, parallel, ~100 s): kubescape, trivy and kubectl run at once; their output is reduced to a ~15-30 KB digest.
 2. **Triage** (`agent.py`, one LLM call, no tools, ~30 s): dedupes, ranks and writes fixes as JSON. The model gets no shell and never sees raw scanner output.
-3. **Render** (`render.py`): deterministic, HTML-escaped report.
+3. **Render** (`render.py`): deterministic, HTML-escaped report. Run cost and time are added by code (`meta`) and shown in the report header.
 
 `TRIVY_SCANNERS=secret,misconfig` skips image CVEs for a faster run.
 
@@ -58,6 +58,37 @@ Weekly CronJob by default (`schedule`). The chart creates no credentials and mou
 - Scanner commands are fixed in `scan.py` (no model-written shell); trivy runs with `--disable-node-collector`; the LLM call has no tools.
 - Findings are LLM-written from the digest. Treat `digest.json` and the raw scanner files as the source of truth.
 
+## Evals (triage quality)
+`evals/fixtures/<case>/` holds a `digest.json` (the exact input the model sees), an `expected.json` (what a correct triage must include, severity ranges, what it must not claim) and a `recorded.json` (a saved model reply). 12 cases: privileged pod + hostPath, RBAC sprawl, missing NetworkPolicy and `:latest`, committed secrets, fixable CVEs, Argo CD wildcard scope, a clean cluster, a real digest from the lab, and four adversarial ones (prompt injection in scanner text, a failed scanner, 40+ failed controls, expected-vs-real host access).
+
+```bash
+python test_evals.py                                  # offline: metric logic, fixture sanity, mutation tests, replay of recorded replies
+EVAL_MODE=live EVAL_RECORD=1 EVAL_LABEL=mine .venv/bin/python evals/run_evals.py   # calls the API (~$0.30 for all 12), re-records replies
+EVAL_CASES=real-lab,fixable-cve EVAL_OUT=evals/results-x .venv/bin/python evals/run_evals.py   # subset; EVAL_MODE defaults to recorded (offline)
+```
+
+**Metrics** (`evals/metrics.py`): *recall* = expected findings found; *severity accuracy* = found items whose severity is in the expected range; *precision (labeled)* = findings that match an expected or acceptable item; *hallucination* = a finding citing a control/CVE ID, version, `Kind/name` resource, hyphenated resource name or number >= 10 that does not occur in `digest.json`; *must-not violations* = severity ceilings (for example the k3s default `system:masters` binding above MEDIUM), banned claims ("cluster is secure", "no vulnerabilities") and invented fix versions; plus JSON validity against the schema, kept `not_checked` entries, framework numbers copied exactly, cost and latency.
+
+**Baseline (current prompt, Sonnet 5.5, effort low; 12 cases, live replies recorded 2026-11-05):**
+
+| metric | value |
+|---|---|
+| JSON valid | 12/12 |
+| recall | 1.0 (22/22 expected findings) |
+| severity accuracy | 1.0 |
+| fix-version accuracy | 1.0 |
+| hallucinated findings | 0 of 69 |
+| must-not violations | 0 |
+| framework number errors | 0 |
+| precision (labeled) | 0.91: 63 of 69 findings match a label; the other 6 are legitimate (non-root MEDIUM, roll-ups of 40 controls, node-exporter/svclb rated MEDIUM as expected) and were left unlabeled |
+| cost / latency per case | $0.028 / 17 s (real-lab: $0.10 / 33 s) |
+
+How to read this honestly:
+- **The suite is saturated.** The current prompt scores 1.0 on everything, so these numbers show no headroom for Phase 2: they protect against regressions, they cannot yet show an improvement.
+- **Labels were adjusted after the first run:** I added the `acceptable` roll-ups (k3s default binding, medium CVE summaries, small misconfigs) after reading the first 8 cases' output, and fixed the hallucination detector's false positives (slashes in prose, ID lists, PSS counts). Raw first-pass numbers were 37% hallucinated, all of which were detector noise. The 4 hard cases were not relabeled.
+- **Detector limits:** names without a hyphen or a `Kind/` prefix, and counts the model derives by adding digest numbers, are not checked. Fixtures are hand-written in the digest shape; only `real-lab` is a real scan.
+- `evals/results-baseline.{json,md}` hold the per-case detail; table mode says "recorded" because the numbers are re-scored from the saved live replies.
+
 ## Not covered
 Node and control-plane CIS checks (need a privileged pod, so the read-only identity skips them), and secrets in git history. Both are listed under "Not checked" in every report.
 
@@ -71,4 +102,4 @@ Node and control-plane CIS checks (need a privileged pod, so the read-only ident
 | `framework not found` | `kubescape list frameworks`, update `KS_FRAMEWORKS` in `scan.py` |
 
 ## Files
-`agent.py` entrypoint, `scan.py` scanners and reducers, `render.py` HTML, `auditor-rbac.yaml` + `auditor-context.sh` read-only identity, `Dockerfile`, `chart/` Helm chart, `test_*.py` tests (`python test_scan.py && python test_render.py`).
+`agent.py` entrypoint, `triage.py` the LLM call, `scan.py` scanners and reducers, `evals/` triage evals, `render.py` HTML, `auditor-rbac.yaml` + `auditor-context.sh` read-only identity, `Dockerfile`, `chart/` Helm chart, `test_*.py` tests (`python test_scan.py && python test_render.py && python test_evals.py`).
