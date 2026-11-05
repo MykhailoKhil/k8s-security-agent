@@ -1,0 +1,14 @@
+# Pinned, checksum-verified tool downloads for Linux (used by the Dockerfile and setup.sh). On macOS setup.sh uses Homebrew.
+# To bump a tool: change the version, take the sha256 values from the project's published checksum file, and re-run the Docker build.
+KUBECTL_VERSION=v1.34.1
+KUBECTL_SHA256_amd64=7721f265e18709862655affba5343e85e1980639395d5754473dafaadcaa69e3
+KUBECTL_SHA256_arm64=420e6110e3ba7ee5a3927b5af868d18df17aae36b720529ffa4e9e945aa95450
+TRIVY_VERSION=0.70.0
+TRIVY_SHA256_amd64=8b4376d5d6befe5c24d503f10ff136d9e0c49f9127a4279fd110b727929a5aa9
+TRIVY_SHA256_arm64=2f6bb988b553a1bbac6bdd1ce890f5e412439564e17522b88a4541b4f364fc8d
+KUBESCAPE_VERSION=4.0.17
+KUBESCAPE_SHA256_amd64=d070dd27faf7282ce8af4e30263385a51fe4ee3ba59f46d57f6f30c0b3ccb342
+KUBESCAPE_SHA256_arm64=2e7a48c7a0577c9d4ec81e8cdf0149fbb67f2e2b649165f77a1da9bb72f30fa7
+JQ_VERSION=1.8.2
+JQ_SHA256_amd64=b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f
+JQ_SHA256_arm64=8b85c817833814ddca00a144c33705546355afccf0cf39b188f3cdb48b852309

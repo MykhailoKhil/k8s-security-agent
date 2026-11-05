@@ -1,28 +1,21 @@
 # syntax=docker/dockerfile:1
-FROM python:3.13-slim
+# Base image pinned by digest (python:3.13-slim). To update: docker buildx imagetools inspect python:3.13-slim
+FROM python:3.13-slim@sha256:09a17cad02668ae61ece136b4fd36ac3849e14f670ebedb637ea3e15580525bc
 
-ARG TARGETARCH
-ARG KUBECTL_VERSION=v1.34.1
-ARG TRIVY_VERSION=v0.70.0
-ARG KUBESCAPE_VERSION=v4.0.17
-
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git jq \
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git \
     && rm -rf /var/lib/apt/lists/*
 
-# kubectl: verified against the published checksum
-RUN curl -fsSLo /usr/local/bin/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl" \
-    && echo "$(curl -fsSL https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${TARGETARCH}/kubectl.sha256)  /usr/local/bin/kubectl" | sha256sum -c - \
-    && chmod +x /usr/local/bin/kubectl
-# shortcut: trivy/kubescape use their official install scripts (no checksum pin here); pin by digest when this goes to prod
-RUN curl -fsSL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin ${TRIVY_VERSION}
-RUN curl -fsSL https://raw.githubusercontent.com/kubescape/kubescape/master/install.sh | RELEASE=${KUBESCAPE_VERSION} /bin/bash
+# kubectl, trivy, kubescape, jq: pinned versions, sha256 verified (tools.lock); the build fails on a mismatch
+COPY tools.lock install-tools.sh /opt/tools/
+RUN /opt/tools/install-tools.sh /usr/local/bin
 
 RUN useradd -m -u 10001 agent
 WORKDIR /app
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY agent.py triage.py investigate.py history.py remediate.py scan.py render.py test_scan.py test_render.py test_history.py test_investigate.py test_remediate.py ./
-RUN python test_scan.py && python test_render.py && python test_history.py && python test_investigate.py && python test_remediate.py
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt
+COPY agent.py triage.py investigate.py history.py remediate.py yamlguard.py gitutil.py scan.py render.py \
+     test_scan.py test_render.py test_history.py test_investigate.py test_remediate.py test_gitutil.py ./
+RUN python test_scan.py && python test_render.py && python test_history.py && python test_investigate.py && python test_remediate.py && python test_gitutil.py
 
 USER 10001
 ENV OUT_DIR=/out HOME=/home/agent
