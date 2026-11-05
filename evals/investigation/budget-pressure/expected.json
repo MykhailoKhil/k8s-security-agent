@@ -1,0 +1,42 @@
+{
+ "description": "8 findings but only 5 tool calls allowed for the whole run: budget must hold; undecided findings stay unverified.",
+ "accept": [
+  [
+   "refuted",
+   "unverified"
+  ],
+  [
+   "confirmed",
+   "unverified"
+  ],
+  [
+   "refuted",
+   "unverified"
+  ],
+  [
+   "confirmed",
+   "unverified"
+  ],
+  [
+   "refuted",
+   "unverified"
+  ],
+  [
+   "confirmed",
+   "unverified"
+  ],
+  [
+   "refuted",
+   "unverified"
+  ],
+  [
+   "confirmed",
+   "unverified"
+  ]
+ ],
+ "budget": {
+  "run_calls": 5,
+  "calls_per_finding": 2,
+  "top_n": 8
+ }
+}

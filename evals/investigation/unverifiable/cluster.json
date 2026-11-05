@@ -1,0 +1,57 @@
+[
+ {
+  "kind": "Pod",
+  "metadata": {
+   "name": "web-1-aaaaa",
+   "namespace": "shop"
+  },
+  "spec": {
+   "containers": [
+    {
+     "name": "web",
+     "image": "app:2.4"
+    }
+   ],
+   "volumes": []
+  }
+ },
+ {
+  "kind": "Deployment",
+  "metadata": {
+   "name": "web",
+   "namespace": "shop"
+  },
+  "spec": {
+   "template": {
+    "spec": {
+     "containers": [
+      {
+       "name": "web",
+       "image": "app:2.4"
+      }
+     ],
+     "volumes": []
+    }
+   }
+  }
+ },
+ {
+  "kind": "Deployment",
+  "metadata": {
+   "name": "traefik",
+   "namespace": "kube-system"
+  },
+  "spec": {
+   "template": {
+    "spec": {
+     "containers": [
+      {
+       "name": "traefik",
+       "image": "rancher/mirrored-library-traefik:3.6.13"
+      }
+     ]
+    }
+   }
+  }
+ }
+]

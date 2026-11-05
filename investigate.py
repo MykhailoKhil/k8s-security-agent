@@ -330,8 +330,10 @@ def finalize(f: dict, idx: int, v: dict | None, st: State) -> dict:
     elif per["ok"] == 0:
         f.update(verified="unverified", verification_evidence="no successful tool call backs the verdict")
     else:
-        mine = " ".join(e.get("result", "") for e in st.trace if e["finding"] == idx and e.get("ok")).lower()
-        if not any(t in mine for t in tokens(v["evidence"])):
+        calls = [e for e in st.trace if e["finding"] == idx and e.get("ok")]
+        mine = " ".join(e.get("result", "") for e in calls).lower()
+        queried = {str(x).lower() for e in calls for x in e["args"].values() if isinstance(x, str) and len(x) >= 3}  # "namespace dev has 0 policies"
+        if not any(t in mine for t in tokens(v["evidence"])) and not any(q in v["evidence"].lower() for q in queried):
             f.update(verified="unverified", verification_evidence="evidence does not quote anything from the tool results")
         else:
             f.update(verified=v["verdict"] == "confirmed", verification_evidence=v["evidence"])
@@ -379,7 +381,7 @@ async def investigate(findings: list[dict], reader, budget: Budget | None = None
         st.cost += v.get("cost", 0.0)
         res[i] = finalize(findings[i], i, v, st)
         log.append({"index": i, "title": findings[i].get("title"), "verified": res[i]["verified"], "evidence": res[i]["verification_evidence"],
-                    "calls": st.per.get(i, {}).get("calls", 0), "budget_hit": st.per.get(i, {}).get("hit", False), "cost_usd": round(v.get("cost", 0.0), 4)})
+                    "model_verdict": {k: v.get(k) for k in ("verdict", "evidence", "error")}, "calls": st.per.get(i, {}).get("calls", 0), "budget_hit": st.per.get(i, {}).get("hit", False), "cost_usd": round(v.get("cost", 0.0), 4)})
 
     sem = asyncio.Semaphore(int(os.environ.get("INVESTIGATE_CONCURRENCY", 3)))
 

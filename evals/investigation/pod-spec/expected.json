@@ -1,0 +1,23 @@
+{
+ "description": "Pod hardening claims; several are false positives given the actual spec.",
+ "accept": [
+  [
+   "confirmed"
+  ],
+  [
+   "confirmed"
+  ],
+  [
+   "refuted"
+  ],
+  [
+   "refuted"
+  ],
+  [
+   "confirmed"
+  ],
+  [
+   "refuted"
+  ]
+ ]
+}

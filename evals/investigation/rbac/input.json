@@ -1,0 +1,59 @@
+{
+ "findings": [
+  {
+   "severity": "HIGH",
+   "title": "ci-bot can read secrets cluster-wide",
+   "resource": "ClusterRoleBinding/ci-secrets",
+   "controls": [
+    "C-0015"
+   ],
+   "evidence": "binding ci-secrets grants get on secrets",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "HIGH",
+   "title": "developers group can delete pods cluster-wide",
+   "resource": "Group/developers",
+   "controls": [
+    "C-0035"
+   ],
+   "evidence": "developers have delete on pods",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "CRITICAL",
+   "title": "default service account in prod is cluster-admin",
+   "resource": "ServiceAccount/prod/default",
+   "controls": [
+    "C-0035"
+   ],
+   "evidence": "cluster-admin bound to default SA",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "HIGH",
+   "title": "argocd-manager is bound to cluster-admin",
+   "resource": "ClusterRoleBinding/argocd-manager",
+   "controls": [
+    "C-0035"
+   ],
+   "evidence": "binding argocd-manager -> cluster-admin",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "alice can exec into pods in staging",
+   "resource": "User/alice",
+   "controls": [
+    "C-0002"
+   ],
+   "evidence": "pods/exec is allowed for alice",
+   "fix": "",
+   "confidence": "high"
+  }
+ ]
+}

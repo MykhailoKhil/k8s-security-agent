@@ -1,0 +1,249 @@
+{
+ "findings": [
+  {
+   "severity": "HIGH",
+   "title": "payments runs a privileged container",
+   "resource": "shop/Deployment/payments",
+   "controls": [
+    "C-0057"
+   ],
+   "evidence": "C-0057 on payments",
+   "fix": "",
+   "confidence": "high",
+   "verified": true,
+   "verification_evidence": "Pod payments-6f7c-abcde in shop has container \"app\" with securityContext {\"privileged\":true}, and it also mounts hostPath /var/run/docker.sock."
+  },
+  {
+   "severity": "HIGH",
+   "title": "payments mounts the docker socket",
+   "resource": "shop/Deployment/payments",
+   "controls": [
+    "C-0048"
+   ],
+   "evidence": "hostPath mount on payments",
+   "fix": "",
+   "confidence": "high",
+   "verified": true,
+   "verification_evidence": "Deployment shop/payments has volume \"sock\" with hostPath.path \"/var/run/docker.sock\", and container \"app\" also runs with securityContext.privileged: true."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "web container may run as root",
+   "resource": "shop/Deployment/web",
+   "controls": [
+    "C-0013"
+   ],
+   "evidence": "C-0013 on web",
+   "fix": "",
+   "confidence": "high",
+   "verified": false,
+   "verification_evidence": "Container web in pod web-5d8b-xyz12 has securityContext runAsNonRoot:true, runAsUser:1000, allowPrivilegeEscalation:false, so it can't run as root."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "worker uses a hostPath volume",
+   "resource": "shop/Deployment/worker",
+   "controls": [
+    "C-0048"
+   ],
+   "evidence": "C-0048 on worker",
+   "fix": "",
+   "confidence": "high",
+   "verified": false,
+   "verification_evidence": "Pod worker-77c9-qwert has only one volume, \"scratch\", which is type emptyDir with \"hostPath\":null, so the worker pod has no hostPath volume."
+  },
+  {
+   "severity": "HIGH",
+   "title": "node-agent DaemonSet uses host networking",
+   "resource": "monitoring/DaemonSet/node-agent",
+   "controls": [
+    "C-0041"
+   ],
+   "evidence": "hostNetwork on node-agent",
+   "fix": "",
+   "confidence": "high",
+   "verified": true,
+   "verification_evidence": "The security context for the monitoring/node-agent DaemonSet template shows \"hostNetwork\":true."
+  },
+  {
+   "severity": "LOW",
+   "title": "web has no CPU or memory limits",
+   "resource": "shop/Deployment/web",
+   "controls": [
+    "C-0009"
+   ],
+   "evidence": "C-0009 on web",
+   "fix": "",
+   "confidence": "high",
+   "verified": false,
+   "verification_evidence": "Deployment shop/web container \"web\" sets resources.limits cpu \"200m\" and memory \"128Mi\", so the finding that it has no limits is wrong."
+  }
+ ],
+ "trace": {
+  "limits": {
+   "top_n": 10,
+   "calls_per_finding": 4,
+   "run_calls": 30,
+   "cost_usd": 1.0,
+   "per_finding_usd": 0.25
+  },
+  "run_calls": 6,
+  "cost_usd": 0.0161,
+  "findings": [
+   {
+    "index": 0,
+    "title": "payments runs a privileged container",
+    "verified": true,
+    "evidence": "Pod payments-6f7c-abcde in shop has container \"app\" with securityContext {\"privileged\":true}, and it also mounts hostPath /var/run/docker.sock.",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "Pod payments-6f7c-abcde in shop has container \"app\" with securityContext {\"privileged\":true}, and it also mounts hostPath /var/run/docker.sock.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0027
+   },
+   {
+    "index": 1,
+    "title": "payments mounts the docker socket",
+    "verified": true,
+    "evidence": "Deployment shop/payments has volume \"sock\" with hostPath.path \"/var/run/docker.sock\", and container \"app\" also runs with securityContext.privileged: true.",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "Deployment shop/payments has volume \"sock\" with hostPath.path \"/var/run/docker.sock\", and container \"app\" also runs with securityContext.privileged: true.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0029
+   },
+   {
+    "index": 2,
+    "title": "web container may run as root",
+    "verified": false,
+    "evidence": "Container web in pod web-5d8b-xyz12 has securityContext runAsNonRoot:true, runAsUser:1000, allowPrivilegeEscalation:false, so it can't run as root.",
+    "model_verdict": {
+     "verdict": "refuted",
+     "evidence": "Container web in pod web-5d8b-xyz12 has securityContext runAsNonRoot:true, runAsUser:1000, allowPrivilegeEscalation:false, so it can't run as root.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0027
+   },
+   {
+    "index": 3,
+    "title": "worker uses a hostPath volume",
+    "verified": false,
+    "evidence": "Pod worker-77c9-qwert has only one volume, \"scratch\", which is type emptyDir with \"hostPath\":null, so the worker pod has no hostPath volume.",
+    "model_verdict": {
+     "verdict": "refuted",
+     "evidence": "Pod worker-77c9-qwert has only one volume, \"scratch\", which is type emptyDir with \"hostPath\":null, so the worker pod has no hostPath volume.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0026
+   },
+   {
+    "index": 4,
+    "title": "node-agent DaemonSet uses host networking",
+    "verified": true,
+    "evidence": "The security context for the monitoring/node-agent DaemonSet template shows \"hostNetwork\":true.",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "The security context for the monitoring/node-agent DaemonSet template shows \"hostNetwork\":true.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0025
+   },
+   {
+    "index": 5,
+    "title": "web has no CPU or memory limits",
+    "verified": false,
+    "evidence": "Deployment shop/web container \"web\" sets resources.limits cpu \"200m\" and memory \"128Mi\", so the finding that it has no limits is wrong.",
+    "model_verdict": {
+     "verdict": "refuted",
+     "evidence": "Deployment shop/web container \"web\" sets resources.limits cpu \"200m\" and memory \"128Mi\", so the finding that it has no limits is wrong.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0028
+   }
+  ],
+  "calls": [
+   {
+    "finding": 4,
+    "tool": "get_pod_security_context",
+    "args": {
+     "namespace": "monitoring",
+     "pod": "node-agent"
+    },
+    "t": 1793888894.8,
+    "ok": true,
+    "result": "{\"found\":true,\"source\":\"DaemonSet template\",\"hostNetwork\":true,\"hostPID\":false,\"hostIPC\":false,\"serviceAccountName\":null,\"automountServiceAccountToken\":null,\"podSecurityContext\":{},\"containers\":[{\"name\":\"agent\",\"image\":\"img:1\",\"securityContext\":{},\"resources\":{\"requests\":[],\"limits\":[]}}],\"volumes\":[]}"
+   },
+   {
+    "finding": 0,
+    "tool": "get_pod_security_context",
+    "args": {
+     "namespace": "shop",
+     "pod": "payments"
+    },
+    "t": 1793888895.7,
+    "ok": true,
+    "result": "{\"found\":true,\"source\":\"Pod payments-6f7c-abcde\",\"hostNetwork\":false,\"hostPID\":false,\"hostIPC\":false,\"serviceAccountName\":null,\"automountServiceAccountToken\":null,\"podSecurityContext\":{},\"containers\":[{\"name\":\"app\",\"image\":\"img:1\",\"securityContext\":{\"privileged\":true},\"resources\":{\"requests\":[],\"limits\":[]}}],\"volumes\":[{\"name\":\"sock\",\"type\":\"hostPath\",\"hostPath\":\"/var/run/docker.sock\"}]}"
+   },
+   {
+    "finding": 1,
+    "tool": "get_manifest",
+    "args": {
+     "kind": "Deployment",
+     "namespace": "shop",
+     "name": "payments"
+    },
+    "t": 1793888896.7,
+    "ok": true,
+    "result": "{\"found\":true,\"manifest\":{\"kind\":\"Deployment\",\"metadata\":{\"name\":\"payments\",\"namespace\":\"shop\"},\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"app\",\"image\":\"img:1\",\"securityContext\":{\"privileged\":true}}],\"volumes\":[{\"name\":\"sock\",\"hostPath\":{\"path\":\"/var/run/docker.sock\"}}]}}}}}"
+   },
+   {
+    "finding": 2,
+    "tool": "get_pod_security_context",
+    "args": {
+     "namespace": "shop",
+     "pod": "web"
+    },
+    "t": 1793888899.8,
+    "ok": true,
+    "result": "{\"found\":true,\"source\":\"Pod web-5d8b-xyz12\",\"hostNetwork\":false,\"hostPID\":false,\"hostIPC\":false,\"serviceAccountName\":null,\"automountServiceAccountToken\":null,\"podSecurityContext\":{},\"containers\":[{\"name\":\"web\",\"image\":\"img:1\",\"securityContext\":{\"runAsNonRoot\":true,\"runAsUser\":1000,\"allowPrivilegeEscalation\":false},\"resources\":{\"requests\":[\"cpu\"],\"limits\":[\"cpu\",\"memory\"]}}],\"volumes\":[]}"
+   },
+   {
+    "finding": 3,
+    "tool": "get_pod_security_context",
+    "args": {
+     "namespace": "shop",
+     "pod": "worker"
+    },
+    "t": 1793888900.7,
+    "ok": true,
+    "result": "{\"found\":true,\"source\":\"Pod worker-77c9-qwert\",\"hostNetwork\":false,\"hostPID\":false,\"hostIPC\":false,\"serviceAccountName\":null,\"automountServiceAccountToken\":null,\"podSecurityContext\":{},\"containers\":[{\"name\":\"w\",\"image\":\"img:1\",\"securityContext\":{},\"resources\":{\"requests\":[],\"limits\":[]}}],\"volumes\":[{\"name\":\"scratch\",\"type\":\"emptyDir\",\"hostPath\":null}]}"
+   },
+   {
+    "finding": 5,
+    "tool": "get_manifest",
+    "args": {
+     "kind": "Deployment",
+     "namespace": "shop",
+     "name": "web"
+    },
+    "t": 1793888902.5,
+    "ok": true,
+    "result": "{\"found\":true,\"manifest\":{\"kind\":\"Deployment\",\"metadata\":{\"name\":\"web\",\"namespace\":\"shop\"},\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"web\",\"image\":\"img:1\",\"securityContext\":{\"runAsNonRoot\":true,\"runAsUser\":1000,\"allowPrivilegeEscalation\":false},\"resources\":{\"requests\":{\"cpu\":\"50m\"},\"limits\":{\"cpu\":\"200m\",\"memory\":\"128Mi\"}}}],\"volumes\":[]}}}}}"
+   }
+  ]
+ }
+}

@@ -8,7 +8,8 @@ Read-only audit of live clusters and manifest repos. Produces `report.html` (ope
 ## How it works
 1. **Scan** (`scan.py`, Python, parallel, ~100 s): kubescape, trivy and kubectl run at once; their output is reduced to a ~15-30 KB digest.
 2. **Triage** (`agent.py`, one LLM call, no tools, ~30 s): dedupes, ranks and writes fixes as JSON. The model gets no shell and never sees raw scanner output.
-3. **Render** (`render.py`): deterministic, HTML-escaped report. Run cost and time are added by code (`meta`) and shown in the report header.
+3. **Investigate** (`investigate.py`, optional, needs a cluster context): for the top 10 findings by severity the model gets four fixed, read-only Python tools and returns `confirmed`, `refuted` or `unverified`. Refuted findings move to their own report section and are not counted.
+4. **Render** (`render.py`): deterministic, HTML-escaped report. Run cost and time are added by code (`meta`) and shown in the report header.
 
 `TRIVY_SCANNERS=secret,misconfig` skips image CVEs for a faster run.
 
@@ -30,6 +31,7 @@ See `.env.example` for every variable. Main ones: `K8S_CONTEXTS`, `AUDIT_PATHS`,
 |---|---|
 | `report.html` | the report |
 | `findings.json` | structured findings, frameworks, "not checked" |
+| `trace.json` | every investigation tool call (args, reduced result, ok/error), per-finding verdicts, the model's raw verdict, budgets and cost |
 | `digest.json` | what the model saw (use it to audit the model's claims) |
 | `ks-*.json`, `trivy*.json`, `pss-*.json` | raw scanner output |
 
@@ -56,6 +58,9 @@ Weekly CronJob by default (`schedule`). The chart creates no credentials and mou
 ## Safety
 - Cluster access is whatever the kubeconfig allows. Use `auditor-rbac.yaml`: built-in `view` plus a few read rules, **no Secrets, no write verbs**.
 - Scanner commands are fixed in `scan.py` (no model-written shell); trivy runs with `--disable-node-collector`; the LLM call has no tools.
+- **Investigation tools** (the only tools the model ever gets; `tools=[]` disables every built-in): `get_manifest(kind, namespace, name)`, `list_network_policies(namespace)`, `who_can(verb, resource, namespace)`, `get_pod_security_context(namespace, pod)`. Implemented in `investigate.py`: arguments validated by allow-list or regex (k8s name pattern, no leading `-`), kinds from a fixed list **without Secrets**, `kubectl get` only, as an argv list with no shell. Results are reduced (no `status`/`managedFields`, ConfigMap values and secret-looking env values redacted, strings clipped to 300 chars), capped at 6000 chars and wrapped as `untrusted_cluster_data`. These SDK-provided tools are the model's only way to act; `StructuredOutput` only returns the verdict.
+- **Budgets are enforced in code:** calls per finding (4), calls per run (30), cost per finding ($0.25) and per run ($1), top N (10). Over a limit the tool returns an error and the finding becomes `unverified`. The run cost cap is checked before each finding, so with concurrency 3 it can overshoot by up to three per-finding caps.
+- **The code decides what a verdict is worth:** `confirmed`/`refuted` needs at least one successful tool call and evidence that quotes something from that finding's tool results (or names the object queried, for absence claims); otherwise it is downgraded to `unverified`.
 - Findings are LLM-written from the digest. Treat `digest.json` and the raw scanner files as the source of truth.
 
 ## Evals (triage quality)
@@ -105,6 +110,28 @@ What changed and what it means:
 - **Scorer changes made during Phase 2** (all recordings re-scored with the final version): injection bans apply to titles and the summary, so reporting the attack in evidence is not penalised; digit-only ranges like `12-13` are not names; the grounding check accepts versions, package paths (`github.com/org/pkg`), `N SEVERITY` counts that match the digest, and quoted digest field names. The first versions of these checks produced false positives and false negatives; the table above uses the final one throughout.
 - The suite is still saturated on quality (recall 1.0, 0 hallucinations, 0 violations), so Phase 2 improvements show up only in the new structural properties (schema, confidence, grounding), not in triage accuracy.
 
+### Phase 3: investigation evals
+`evals/investigation/<case>/` has the findings to verify (`input.json`), a fake cluster as plain k8s JSON (`cluster.json`, no Secrets) and the acceptable verdicts per finding (`expected.json`). 6 cases, 31 findings: NetworkPolicies, RBAC reverse lookup, pod specs, undecidable findings (image CVEs, Secrets, missing objects, repo-only issues), instructions planted in cluster data (annotations, object names), and a budget of 5 calls for 8 findings. Run: `python evals/run_investigation.py` (offline replay) or `EVAL_MODE=live EVAL_RECORD=1 ...` (about $0.10-0.20). `python test_inv_evals.py` includes mutation tests (dropping a true finding, confirming the undecidable, breaking budgets, calling for a Secret).
+
+| metric (final live run) | value |
+|---|---|
+| verdict accuracy | 31 of 31 |
+| false positives shown to the user | 11 with Phase 2 (no verification) -> 2 with Phase 3 (the 2 left are budget-limited: stayed `unverified`) |
+| true findings wrongly refuted | 0 of 15 |
+| wrongly confirmed | 0 |
+| decisive findings left unverified | 0 of 17 |
+| budget violations (calls, run calls, Secret reads, unlogged calls) | 0 |
+| verdicts whose evidence quotes nothing from tool results | 0 (1 names only the queried object: an absence claim) |
+| tool calls / cost per finding | 0.9 / about $0.003-0.006 |
+
+Real cluster (k3d workload + both repos, one run): 17 findings, 11 tool calls, 6 confirmed, 0 refuted, 11 unverified (7 outside the top 10, 4 image-CVE findings the tools cannot check); investigation added $0.15 and about 30 s to a $0.13 triage.
+
+Read this honestly:
+- **First run, before fixing my own fixtures:** accuracy 0.86 and 1 true finding wrongly refuted. Causes: the fake cluster had Pods but the findings named Deployments (so the lookup returned "not found"), one Secret finding was decidable from RBAC data after all, and my evidence check rejected a correct absence claim. I fixed the fixtures and the absence rule and re-ran; the first recordings are kept as `recorded-run1.json` and `evals/inv-results-run1.*`. The final numbers are on adjusted fixtures.
+- **The suite is small and hand-written** (31 findings, one model, one run per case) and the cluster is fake, so 100% here does not predict 100% on a real cluster. I did not find a failure mode worth a prompt change: a close copy of a real-run case where the model "confirmed" a Traefik CVE stayed `unverified` in 4 of 4 runs.
+- **What `confirmed` means:** the cluster state matches the finding (for a CVE finding: the vulnerable image is deployed), not that the issue is exploitable. A CVE's existence, image contents and Secret contents cannot be verified with these tools.
+- `who_can` is approximate (ignores apiGroups; shows `resourceNames` limits) and does not expand aggregated ClusterRoles.
+
 How to read this honestly:
 - **The suite is saturated.** The current prompt scores 1.0 on everything, so these numbers show no headroom for Phase 2: they protect against regressions, they cannot yet show an improvement.
 - **Labels were adjusted after the first run:** I added the `acceptable` roll-ups (k3s default binding, medium CVE summaries, small misconfigs) after reading the first 8 cases' output, and fixed the hallucination detector's false positives (slashes in prose, ID lists, PSS counts). Raw first-pass numbers were 37% hallucinated, all of which were detector noise. The 4 hard cases were not relabeled.
@@ -124,4 +151,4 @@ Node and control-plane CIS checks (need a privileged pod, so the read-only ident
 | `framework not found` | `kubescape list frameworks`, update `KS_FRAMEWORKS` in `scan.py` |
 
 ## Files
-`agent.py` entrypoint, `triage.py` the LLM call, `scan.py` scanners and reducers, `evals/` triage evals, `render.py` HTML, `auditor-rbac.yaml` + `auditor-context.sh` read-only identity, `Dockerfile`, `chart/` Helm chart, `test_*.py` tests (`python test_scan.py && python test_render.py && python test_evals.py`).
+`agent.py` entrypoint, `triage.py` the LLM call, `investigate.py` the read-only investigation tools, `scan.py` scanners and reducers, `evals/` triage evals, `render.py` HTML, `auditor-rbac.yaml` + `auditor-context.sh` read-only identity, `Dockerfile`, `chart/` Helm chart, `test_*.py` tests (`python test_scan.py && python test_render.py && python test_evals.py && python test_investigate.py && python test_inv_evals.py`).

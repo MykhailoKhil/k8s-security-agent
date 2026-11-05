@@ -1,0 +1,20 @@
+{
+ "description": "Admin/secret-access claims where some bindings are cluster-wide and some only namespaced or absent.",
+ "accept": [
+  [
+   "confirmed"
+  ],
+  [
+   "refuted"
+  ],
+  [
+   "refuted"
+  ],
+  [
+   "confirmed"
+  ],
+  [
+   "confirmed"
+  ]
+ ]
+}

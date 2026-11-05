@@ -1,0 +1,188 @@
+[
+ {
+  "kind": "Pod",
+  "metadata": {
+   "name": "payments-6f7c-abcde",
+   "namespace": "shop"
+  },
+  "spec": {
+   "containers": [
+    {
+     "name": "app",
+     "image": "img:1",
+     "securityContext": {
+      "privileged": true
+     }
+    }
+   ],
+   "volumes": [
+    {
+     "name": "sock",
+     "hostPath": {
+      "path": "/var/run/docker.sock"
+     }
+    }
+   ]
+  }
+ },
+ {
+  "kind": "Pod",
+  "metadata": {
+   "name": "web-5d8b-xyz12",
+   "namespace": "shop"
+  },
+  "spec": {
+   "containers": [
+    {
+     "name": "web",
+     "image": "img:1",
+     "securityContext": {
+      "runAsNonRoot": true,
+      "runAsUser": 1000,
+      "allowPrivilegeEscalation": false
+     },
+     "resources": {
+      "requests": {
+       "cpu": "50m"
+      },
+      "limits": {
+       "cpu": "200m",
+       "memory": "128Mi"
+      }
+     }
+    }
+   ],
+   "volumes": []
+  }
+ },
+ {
+  "kind": "Pod",
+  "metadata": {
+   "name": "worker-77c9-qwert",
+   "namespace": "shop"
+  },
+  "spec": {
+   "containers": [
+    {
+     "name": "w",
+     "image": "img:1"
+    }
+   ],
+   "volumes": [
+    {
+     "name": "scratch",
+     "emptyDir": {}
+    }
+   ]
+  }
+ },
+ {
+  "kind": "DaemonSet",
+  "metadata": {
+   "name": "node-agent",
+   "namespace": "monitoring"
+  },
+  "spec": {
+   "template": {
+    "spec": {
+     "hostNetwork": true,
+     "containers": [
+      {
+       "name": "agent",
+       "image": "img:1"
+      }
+     ]
+    }
+   }
+  }
+ },
+ {
+  "kind": "Deployment",
+  "metadata": {
+   "name": "payments",
+   "namespace": "shop"
+  },
+  "spec": {
+   "template": {
+    "spec": {
+     "containers": [
+      {
+       "name": "app",
+       "image": "img:1",
+       "securityContext": {
+        "privileged": true
+       }
+      }
+     ],
+     "volumes": [
+      {
+       "name": "sock",
+       "hostPath": {
+        "path": "/var/run/docker.sock"
+       }
+      }
+     ]
+    }
+   }
+  }
+ },
+ {
+  "kind": "Deployment",
+  "metadata": {
+   "name": "web",
+   "namespace": "shop"
+  },
+  "spec": {
+   "template": {
+    "spec": {
+     "containers": [
+      {
+       "name": "web",
+       "image": "img:1",
+       "securityContext": {
+        "runAsNonRoot": true,
+        "runAsUser": 1000,
+        "allowPrivilegeEscalation": false
+       },
+       "resources": {
+        "requests": {
+         "cpu": "50m"
+        },
+        "limits": {
+         "cpu": "200m",
+         "memory": "128Mi"
+        }
+       }
+      }
+     ],
+     "volumes": []
+    }
+   }
+  }
+ },
+ {
+  "kind": "Deployment",
+  "metadata": {
+   "name": "worker",
+   "namespace": "shop"
+  },
+  "spec": {
+   "template": {
+    "spec": {
+     "containers": [
+      {
+       "name": "w",
+       "image": "img:1"
+      }
+     ],
+     "volumes": [
+      {
+       "name": "scratch",
+       "emptyDir": {}
+      }
+     ]
+    }
+   }
+  }
+ }
+]

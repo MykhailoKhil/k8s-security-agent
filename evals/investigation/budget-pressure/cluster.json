@@ -1,0 +1,54 @@
+[
+ {
+  "kind": "NetworkPolicy",
+  "metadata": {
+   "name": "default-deny",
+   "namespace": "a1"
+  },
+  "spec": {
+   "podSelector": {},
+   "policyTypes": [
+    "Ingress"
+   ]
+  }
+ },
+ {
+  "kind": "NetworkPolicy",
+  "metadata": {
+   "name": "default-deny",
+   "namespace": "a3"
+  },
+  "spec": {
+   "podSelector": {},
+   "policyTypes": [
+    "Ingress"
+   ]
+  }
+ },
+ {
+  "kind": "NetworkPolicy",
+  "metadata": {
+   "name": "default-deny",
+   "namespace": "a5"
+  },
+  "spec": {
+   "podSelector": {},
+   "policyTypes": [
+    "Ingress"
+   ]
+  }
+ },
+ {
+  "kind": "NetworkPolicy",
+  "metadata": {
+   "name": "default-deny",
+   "namespace": "a7"
+  },
+  "spec": {
+   "podSelector": {},
+   "policyTypes": [
+    "Ingress"
+   ]
+  }
+ }
+]

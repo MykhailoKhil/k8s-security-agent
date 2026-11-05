@@ -110,11 +110,11 @@ assert bad_call["is_error"]                                                     
 
 
 # --- verdict enforcement: the code, not the model, decides what a verdict is worth
-def fin(per, verdict, trace_result="", **over):
+def fin(per, verdict, trace_result="", args=None, **over):
     s = State(R, Budget())
     s.per[0] = {"calls": per.get("calls", 1), "hit": per.get("hit", False), "ok": per.get("ok", 1)}
     if trace_result:
-        s.trace.append({"finding": 0, "tool": "t", "args": {}, "ok": True, "result": trace_result})
+        s.trace.append({"finding": 0, "tool": "t", "args": args or {}, "ok": True, "result": trace_result})
     return finalize({"title": "t", "severity": "HIGH"}, 0, verdict, s)
 
 
@@ -122,7 +122,8 @@ good = {"verdict": "refuted", "evidence": "NetworkPolicy 'default-deny' exists i
 assert fin({}, good, '{"name":"default-deny"}')["verified"] is False
 assert fin({}, {**good, "verdict": "confirmed"}, '{"name":"default-deny"}')["verified"] is True
 assert fin({"ok": 0}, good, '{"name":"default-deny"}')["verified"] == "unverified"                       # no successful tool call
-assert fin({}, good, '{"name":"something-else"}')["verified"] == "unverified"                             # evidence not in tool results
+assert fin({}, {"verdict": "refuted", "evidence": "all fine, nothing to see"}, '{"name":"something-else"}')["verified"] == "unverified"   # evidence not in tool results
+assert fin({}, {"verdict": "confirmed", "evidence": "namespace dev has zero policies"}, '{"count":0}', args={"namespace": "dev"})["verified"] is True   # absence claim names what was queried
 assert fin({"hit": True}, good, '{"name":"default-deny"}')["verified"] == "unverified"                    # budget hit wins
 assert fin({}, {"verdict": "unverified", "evidence": "cannot tell"}, "")["verified"] == "unverified"
 assert fin({}, None, "")["verified"] == "unverified" and fin({}, {"error": "MaxTurns"}, "")["verification_evidence"] == "MaxTurns"

@@ -1,0 +1,73 @@
+[
+ {
+  "kind": "NetworkPolicy",
+  "metadata": {
+   "name": "default-deny-ingress",
+   "namespace": "shop"
+  },
+  "spec": {
+   "podSelector": {},
+   "policyTypes": [
+    "Ingress"
+   ]
+  }
+ },
+ {
+  "kind": "NetworkPolicy",
+  "metadata": {
+   "name": "allow-web",
+   "namespace": "shop"
+  },
+  "spec": {
+   "podSelector": {
+    "matchLabels": {
+     "app": "web"
+    }
+   },
+   "policyTypes": [
+    "Ingress"
+   ],
+   "ingress": [
+    {}
+   ]
+  }
+ },
+ {
+  "kind": "NetworkPolicy",
+  "metadata": {
+   "name": "allow-api",
+   "namespace": "qa"
+  },
+  "spec": {
+   "podSelector": {
+    "matchLabels": {
+     "app": "api"
+    }
+   },
+   "policyTypes": [
+    "Ingress"
+   ],
+   "ingress": [
+    {}
+   ]
+  }
+ },
+ {
+  "kind": "Namespace",
+  "metadata": {
+   "name": "dev"
+  }
+ },
+ {
+  "kind": "Namespace",
+  "metadata": {
+   "name": "shop"
+  }
+ },
+ {
+  "kind": "Namespace",
+  "metadata": {
+   "name": "qa"
+  }
+ }
+]

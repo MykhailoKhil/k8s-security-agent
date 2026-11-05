@@ -1,0 +1,26 @@
+{
+ "findings": [
+  {
+   "severity": "HIGH",
+   "title": "debug pod runs a privileged container",
+   "resource": "ops/Pod/debug",
+   "controls": [
+    "C-0057"
+   ],
+   "evidence": "C-0057 on debug",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "ops has no default-deny ingress policy",
+   "resource": "ops",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in ops",
+   "fix": "",
+   "confidence": "high"
+  }
+ ]
+}

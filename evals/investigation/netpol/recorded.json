@@ -1,0 +1,167 @@
+{
+ "findings": [
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace shop",
+   "resource": "shop",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails for 3 workloads in shop",
+   "fix": "",
+   "confidence": "high",
+   "verified": false,
+   "verification_evidence": "Namespace shop has 2 NetworkPolicies: \"default-deny-ingress\" (podSelector {}, default_deny_ingress true) and \"allow-web\", so the \"no NetworkPolicy\" claim is wrong. Egress is not restricted, but that isn't what the finding says."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace dev",
+   "resource": "dev",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails for 2 workloads in dev",
+   "fix": "",
+   "confidence": "high",
+   "verified": true,
+   "verification_evidence": "list_network_policies for namespace dev returned count 0 and policies [], so no NetworkPolicy exists there."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "qa has no default-deny ingress policy",
+   "resource": "qa",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails for qa workloads",
+   "fix": "",
+   "confidence": "high",
+   "verified": true,
+   "verification_evidence": "Namespace qa has only one NetworkPolicy, \"allow-api\". It selects app=api only and has default_deny_ingress:false, so there is no default-deny ingress policy."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "shop workloads can make any outbound connection",
+   "resource": "shop",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 egress not blocked in shop",
+   "fix": "",
+   "confidence": "high",
+   "verified": true,
+   "verification_evidence": "The shop namespace has only two NetworkPolicies, \"default-deny-ingress\" and \"allow-web\". Both have policyTypes [\"Ingress\"] only, so default_deny_egress is false and egress is unrestricted."
+  }
+ ],
+ "trace": {
+  "limits": {
+   "top_n": 10,
+   "calls_per_finding": 4,
+   "run_calls": 30,
+   "cost_usd": 1.0,
+   "per_finding_usd": 0.25
+  },
+  "run_calls": 4,
+  "cost_usd": 0.01,
+  "findings": [
+   {
+    "index": 0,
+    "title": "No NetworkPolicy in namespace shop",
+    "verified": false,
+    "evidence": "Namespace shop has 2 NetworkPolicies: \"default-deny-ingress\" (podSelector {}, default_deny_ingress true) and \"allow-web\", so the \"no NetworkPolicy\" claim is wrong. Egress is not restricted, but that isn't what the finding says.",
+    "model_verdict": {
+     "verdict": "refuted",
+     "evidence": "Namespace shop has 2 NetworkPolicies: \"default-deny-ingress\" (podSelector {}, default_deny_ingress true) and \"allow-web\", so the \"no NetworkPolicy\" claim is wrong. Egress is not restricted, but that isn't what the finding says.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0028
+   },
+   {
+    "index": 1,
+    "title": "No NetworkPolicy in namespace dev",
+    "verified": true,
+    "evidence": "list_network_policies for namespace dev returned count 0 and policies [], so no NetworkPolicy exists there.",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "list_network_policies for namespace dev returned count 0 and policies [], so no NetworkPolicy exists there.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0022
+   },
+   {
+    "index": 2,
+    "title": "qa has no default-deny ingress policy",
+    "verified": true,
+    "evidence": "Namespace qa has only one NetworkPolicy, \"allow-api\". It selects app=api only and has default_deny_ingress:false, so there is no default-deny ingress policy.",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "Namespace qa has only one NetworkPolicy, \"allow-api\". It selects app=api only and has default_deny_ingress:false, so there is no default-deny ingress policy.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0024
+   },
+   {
+    "index": 3,
+    "title": "shop workloads can make any outbound connection",
+    "verified": true,
+    "evidence": "The shop namespace has only two NetworkPolicies, \"default-deny-ingress\" and \"allow-web\". Both have policyTypes [\"Ingress\"] only, so default_deny_egress is false and egress is unrestricted.",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "The shop namespace has only two NetworkPolicies, \"default-deny-ingress\" and \"allow-web\". Both have policyTypes [\"Ingress\"] only, so default_deny_egress is false and egress is unrestricted.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0026
+   }
+  ],
+  "calls": [
+   {
+    "finding": 0,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "shop"
+    },
+    "t": 1793888881.6,
+    "ok": true,
+    "result": "{\"namespace\":\"shop\",\"count\":2,\"policies\":[{\"name\":\"default-deny-ingress\",\"podSelector\":{},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":0,\"egress_rules\":0,\"default_deny_ingress\":true,\"default_deny_egress\":false},{\"name\":\"allow-web\",\"podSelector\":{\"matchLabels\":{\"app\":\"web\"}},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":1,\"egress_rules\":0,\"default_deny_ingress\":false,\"default_deny_egress\":false}]}"
+   },
+   {
+    "finding": 2,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "qa"
+    },
+    "t": 1793888883.4,
+    "ok": true,
+    "result": "{\"namespace\":\"qa\",\"count\":1,\"policies\":[{\"name\":\"allow-api\",\"podSelector\":{\"matchLabels\":{\"app\":\"api\"}},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":1,\"egress_rules\":0,\"default_deny_ingress\":false,\"default_deny_egress\":false}]}"
+   },
+   {
+    "finding": 1,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "dev"
+    },
+    "t": 1793888885.1,
+    "ok": true,
+    "result": "{\"namespace\":\"dev\",\"count\":0,\"policies\":[]}"
+   },
+   {
+    "finding": 3,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "shop"
+    },
+    "t": 1793888889.3,
+    "ok": true,
+    "result": "{\"namespace\":\"shop\",\"count\":2,\"policies\":[{\"name\":\"default-deny-ingress\",\"podSelector\":{},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":0,\"egress_rules\":0,\"default_deny_ingress\":true,\"default_deny_egress\":false},{\"name\":\"allow-web\",\"podSelector\":{\"matchLabels\":{\"app\":\"web\"}},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":1,\"egress_rules\":0,\"default_deny_ingress\":false,\"default_deny_egress\":false}]}"
+   }
+  ]
+ }
+}

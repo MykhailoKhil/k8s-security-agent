@@ -1,0 +1,17 @@
+{
+ "description": "Scanner says no NetworkPolicy; reality differs per namespace (ingress-only deny does not cover egress).",
+ "accept": [
+  [
+   "refuted"
+  ],
+  [
+   "confirmed"
+  ],
+  [
+   "confirmed"
+  ],
+  [
+   "confirmed"
+  ]
+ ]
+}

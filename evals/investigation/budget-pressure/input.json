@@ -1,0 +1,92 @@
+{
+ "findings": [
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a1",
+   "resource": "a1",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a1",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a2",
+   "resource": "a2",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a2",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a3",
+   "resource": "a3",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a3",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a4",
+   "resource": "a4",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a4",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a5",
+   "resource": "a5",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a5",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a6",
+   "resource": "a6",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a6",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a7",
+   "resource": "a7",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a7",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a8",
+   "resource": "a8",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a8",
+   "fix": "",
+   "confidence": "high"
+  }
+ ]
+}

@@ -1,0 +1,48 @@
+{
+ "findings": [
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace shop",
+   "resource": "shop",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails for 3 workloads in shop",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace dev",
+   "resource": "dev",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails for 2 workloads in dev",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "qa has no default-deny ingress policy",
+   "resource": "qa",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails for qa workloads",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "shop workloads can make any outbound connection",
+   "resource": "shop",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 egress not blocked in shop",
+   "fix": "",
+   "confidence": "high"
+  }
+ ]
+}

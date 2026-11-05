@@ -21,8 +21,8 @@ RUN useradd -m -u 10001 agent
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
-COPY agent.py triage.py scan.py render.py test_scan.py test_render.py ./
-RUN python test_scan.py && python test_render.py
+COPY agent.py triage.py investigate.py scan.py render.py test_scan.py test_render.py test_investigate.py ./
+RUN python test_scan.py && python test_render.py && python test_investigate.py
 
 USER 10001
 ENV OUT_DIR=/out HOME=/home/agent

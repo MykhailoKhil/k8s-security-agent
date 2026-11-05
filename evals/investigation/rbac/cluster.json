@@ -1,0 +1,145 @@
+[
+ {
+  "kind": "ClusterRole",
+  "metadata": {
+   "name": "secret-reader"
+  },
+  "rules": [
+   {
+    "verbs": [
+     "get",
+     "list"
+    ],
+    "resources": [
+     "secrets"
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "ClusterRole",
+  "metadata": {
+   "name": "pod-admin"
+  },
+  "rules": [
+   {
+    "verbs": [
+     "get",
+     "list",
+     "delete"
+    ],
+    "resources": [
+     "pods"
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "ClusterRole",
+  "metadata": {
+   "name": "cluster-admin"
+  },
+  "rules": [
+   {
+    "verbs": [
+     "*"
+    ],
+    "resources": [
+     "*"
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "Role",
+  "metadata": {
+   "name": "execer",
+   "namespace": "staging"
+  },
+  "rules": [
+   {
+    "verbs": [
+     "create"
+    ],
+    "resources": [
+     "pods/exec"
+    ]
+   }
+  ]
+ },
+ {
+  "kind": "ClusterRoleBinding",
+  "metadata": {
+   "name": "ci-secrets"
+  },
+  "roleRef": {
+   "kind": "ClusterRole",
+   "name": "secret-reader"
+  },
+  "subjects": [
+   {
+    "kind": "ServiceAccount",
+    "name": "ci-bot",
+    "namespace": "ci"
+   }
+  ]
+ },
+ {
+  "kind": "ClusterRoleBinding",
+  "metadata": {
+   "name": "argocd-manager"
+  },
+  "roleRef": {
+   "kind": "ClusterRole",
+   "name": "cluster-admin"
+  },
+  "subjects": [
+   {
+    "kind": "ServiceAccount",
+    "name": "argocd-manager",
+    "namespace": "kube-system"
+   }
+  ]
+ },
+ {
+  "kind": "RoleBinding",
+  "metadata": {
+   "name": "devs-pods",
+   "namespace": "dev"
+  },
+  "roleRef": {
+   "kind": "ClusterRole",
+   "name": "pod-admin"
+  },
+  "subjects": [
+   {
+    "kind": "Group",
+    "name": "developers"
+   }
+  ]
+ },
+ {
+  "kind": "RoleBinding",
+  "metadata": {
+   "name": "alice-exec",
+   "namespace": "staging"
+  },
+  "roleRef": {
+   "kind": "Role",
+   "name": "execer"
+  },
+  "subjects": [
+   {
+    "kind": "User",
+    "name": "alice"
+   }
+  ]
+ },
+ {
+  "kind": "ServiceAccount",
+  "metadata": {
+   "name": "default",
+   "namespace": "prod"
+  }
+ }
+]

@@ -1,0 +1,315 @@
+{
+ "findings": [
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a1",
+   "resource": "a1",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a1",
+   "fix": "",
+   "confidence": "high",
+   "verified": false,
+   "verification_evidence": "Namespace a1 has a NetworkPolicy named \"default-deny\" with podSelector {} and policyTypes [\"Ingress\"] (default_deny_ingress: true), so the finding \"No NetworkPolicy\" is wrong. Egress isn't denied (default_deny_egress: false), but that doesn't change this."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a2",
+   "resource": "a2",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a2",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "evidence does not quote anything from the tool results"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a3",
+   "resource": "a3",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a3",
+   "fix": "",
+   "confidence": "high",
+   "verified": false,
+   "verification_evidence": "Namespace a3 has a NetworkPolicy named \"default-deny\" with podSelector {} and default_deny_ingress true, so the finding's claim of no NetworkPolicy is wrong. Egress isn't denied (default_deny_egress false)."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a4",
+   "resource": "a4",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a4",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "evidence does not quote anything from the tool results"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a5",
+   "resource": "a5",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a5",
+   "fix": "",
+   "confidence": "high",
+   "verified": false,
+   "verification_evidence": "Namespace a5 has a NetworkPolicy \"default-deny\" (podSelector {}, policyTypes Ingress, default_deny_ingress true), so the claim that no NetworkPolicy exists is wrong. Egress is not restricted (default_deny_egress false)."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a6",
+   "resource": "a6",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a6",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "budget exhausted after 0 tool calls"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a7",
+   "resource": "a7",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a7",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "budget exhausted after 0 tool calls"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "No NetworkPolicy in namespace a8",
+   "resource": "a8",
+   "controls": [
+    "C-0030"
+   ],
+   "evidence": "C-0030 fails in a8",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "budget exhausted after 0 tool calls"
+  }
+ ],
+ "trace": {
+  "limits": {
+   "top_n": 8,
+   "calls_per_finding": 2,
+   "run_calls": 5,
+   "cost_usd": 1.0,
+   "per_finding_usd": 0.25
+  },
+  "run_calls": 5,
+  "cost_usd": 0.0209,
+  "findings": [
+   {
+    "index": 0,
+    "title": "No NetworkPolicy in namespace a1",
+    "verified": false,
+    "evidence": "Namespace a1 has a NetworkPolicy named \"default-deny\" with podSelector {} and policyTypes [\"Ingress\"] (default_deny_ingress: true), so the finding \"No NetworkPolicy\" is wrong. Egress isn't denied (default_deny_egress: false), but that doesn't change this.",
+    "model_verdict": {
+     "verdict": "refuted",
+     "evidence": "Namespace a1 has a NetworkPolicy named \"default-deny\" with podSelector {} and policyTypes [\"Ingress\"] (default_deny_ingress: true), so the finding \"No NetworkPolicy\" is wrong. Egress isn't denied (default_deny_egress: false), but that doesn't change this.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0029
+   },
+   {
+    "index": 1,
+    "title": "No NetworkPolicy in namespace a2",
+    "verified": "unverified",
+    "evidence": "evidence does not quote anything from the tool results",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "list_network_policies for namespace a2 returned count 0 and policies [], so the namespace has no NetworkPolicy.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0022
+   },
+   {
+    "index": 2,
+    "title": "No NetworkPolicy in namespace a3",
+    "verified": false,
+    "evidence": "Namespace a3 has a NetworkPolicy named \"default-deny\" with podSelector {} and default_deny_ingress true, so the finding's claim of no NetworkPolicy is wrong. Egress isn't denied (default_deny_egress false).",
+    "model_verdict": {
+     "verdict": "refuted",
+     "evidence": "Namespace a3 has a NetworkPolicy named \"default-deny\" with podSelector {} and default_deny_ingress true, so the finding's claim of no NetworkPolicy is wrong. Egress isn't denied (default_deny_egress false).",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0026
+   },
+   {
+    "index": 3,
+    "title": "No NetworkPolicy in namespace a4",
+    "verified": "unverified",
+    "evidence": "evidence does not quote anything from the tool results",
+    "model_verdict": {
+     "verdict": "confirmed",
+     "evidence": "list_network_policies for namespace a4 returned count 0 and policies [], so no NetworkPolicy exists there.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0028
+   },
+   {
+    "index": 4,
+    "title": "No NetworkPolicy in namespace a5",
+    "verified": false,
+    "evidence": "Namespace a5 has a NetworkPolicy \"default-deny\" (podSelector {}, policyTypes Ingress, default_deny_ingress true), so the claim that no NetworkPolicy exists is wrong. Egress is not restricted (default_deny_egress false).",
+    "model_verdict": {
+     "verdict": "refuted",
+     "evidence": "Namespace a5 has a NetworkPolicy \"default-deny\" (podSelector {}, policyTypes Ingress, default_deny_ingress true), so the claim that no NetworkPolicy exists is wrong. Egress is not restricted (default_deny_egress false).",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0027
+   },
+   {
+    "index": 5,
+    "title": "No NetworkPolicy in namespace a6",
+    "verified": "unverified",
+    "evidence": "budget exhausted after 0 tool calls",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "The list_network_policies call for namespace a6 returned \"ERROR: tool-call budget exhausted\", so I couldn't check whether any NetworkPolicy exists.",
+     "error": null
+    },
+    "calls": 0,
+    "budget_hit": true,
+    "cost_usd": 0.0029
+   },
+   {
+    "index": 6,
+    "title": "No NetworkPolicy in namespace a7",
+    "verified": "unverified",
+    "evidence": "budget exhausted after 0 tool calls",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "The list_network_policies call for namespace a7 returned \"ERROR: tool-call budget exhausted\", so I couldn't check whether any NetworkPolicy exists there.",
+     "error": null
+    },
+    "calls": 0,
+    "budget_hit": true,
+    "cost_usd": 0.0024
+   },
+   {
+    "index": 7,
+    "title": "No NetworkPolicy in namespace a8",
+    "verified": "unverified",
+    "evidence": "budget exhausted after 0 tool calls",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "The list_network_policies call for namespace a8 returned \"ERROR: tool-call budget exhausted\", so I couldn't check whether any NetworkPolicy exists there.",
+     "error": null
+    },
+    "calls": 0,
+    "budget_hit": true,
+    "cost_usd": 0.0024
+   }
+  ],
+  "calls": [
+   {
+    "finding": 1,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a2"
+    },
+    "t": 1793888882.7,
+    "ok": true,
+    "result": "{\"namespace\":\"a2\",\"count\":0,\"policies\":[]}"
+   },
+   {
+    "finding": 2,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a3"
+    },
+    "t": 1793888884.1,
+    "ok": true,
+    "result": "{\"namespace\":\"a3\",\"count\":1,\"policies\":[{\"name\":\"default-deny\",\"podSelector\":{},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":0,\"egress_rules\":0,\"default_deny_ingress\":true,\"default_deny_egress\":false}]}"
+   },
+   {
+    "finding": 4,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a5"
+    },
+    "t": 1793888889.7,
+    "ok": true,
+    "result": "{\"namespace\":\"a5\",\"count\":1,\"policies\":[{\"name\":\"default-deny\",\"podSelector\":{},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":0,\"egress_rules\":0,\"default_deny_ingress\":true,\"default_deny_egress\":false}]}"
+   },
+   {
+    "finding": 3,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a4"
+    },
+    "t": 1793888890.0,
+    "ok": true,
+    "result": "{\"namespace\":\"a4\",\"count\":0,\"policies\":[]}"
+   },
+   {
+    "finding": 0,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a1"
+    },
+    "t": 1793888893.5,
+    "ok": true,
+    "result": "{\"namespace\":\"a1\",\"count\":1,\"policies\":[{\"name\":\"default-deny\",\"podSelector\":{},\"policyTypes\":[\"Ingress\"],\"ingress_rules\":0,\"egress_rules\":0,\"default_deny_ingress\":true,\"default_deny_egress\":false}]}"
+   },
+   {
+    "finding": 5,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a6"
+    },
+    "t": 1793888895.3,
+    "ok": false,
+    "error": "budget exhausted"
+   },
+   {
+    "finding": 6,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a7"
+    },
+    "t": 1793888899.7,
+    "ok": false,
+    "error": "budget exhausted"
+   },
+   {
+    "finding": 7,
+    "tool": "list_network_policies",
+    "args": {
+     "namespace": "a8"
+    },
+    "t": 1793888899.8,
+    "ok": false,
+    "error": "budget exhausted"
+   }
+  ]
+ }
+}

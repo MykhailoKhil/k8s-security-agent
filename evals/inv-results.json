@@ -1,0 +1,171 @@
+{
+ "label": "phase3",
+ "mode": "live",
+ "aggregate": {
+  "cases": 6,
+  "findings": 31,
+  "verdict_accuracy": 1.0,
+  "fp_total (Phase 2 shows these)": 11,
+  "fp_removed": 9,
+  "fp_remaining (Phase 3 shows these)": 2,
+  "tp_total": 15,
+  "tp_wrongly_refuted": 0,
+  "wrongly_confirmed": 0,
+  "over_cautious (decisive but unverified)": "0/17",
+  "ungrounded_verdicts": 0,
+  "weakly_grounded (names the queried object only)": 1,
+  "budget_violations": 0,
+  "tool_calls_per_finding": 0.9,
+  "cost_per_finding_usd": 0.0028,
+  "total_cost_usd": 0.086
+ },
+ "cases": {
+  "budget-pressure": {
+   "findings": 8,
+   "verdicts": [
+    "refuted",
+    "unverified",
+    "refuted",
+    "unverified",
+    "refuted",
+    "unverified",
+    "unverified",
+    "unverified"
+   ],
+   "correct": 8,
+   "fp_total": 4,
+   "fp_removed": 3,
+   "tp_total": 4,
+   "tp_kept": 4,
+   "wrongly_refuted": [],
+   "wrongly_confirmed": [],
+   "over_cautious": 0,
+   "decisive": 0,
+   "calls": 5,
+   "cost_usd": 0.0209,
+   "ungrounded": [],
+   "weakly_grounded": [],
+   "budget_violations": []
+  },
+  "netpol": {
+   "findings": 4,
+   "verdicts": [
+    "refuted",
+    "confirmed",
+    "confirmed",
+    "confirmed"
+   ],
+   "correct": 4,
+   "fp_total": 1,
+   "fp_removed": 1,
+   "tp_total": 3,
+   "tp_kept": 3,
+   "wrongly_refuted": [],
+   "wrongly_confirmed": [],
+   "over_cautious": 0,
+   "decisive": 4,
+   "calls": 4,
+   "cost_usd": 0.01,
+   "ungrounded": [],
+   "weakly_grounded": [
+    1
+   ],
+   "budget_violations": []
+  },
+  "pod-spec": {
+   "findings": 6,
+   "verdicts": [
+    "confirmed",
+    "confirmed",
+    "refuted",
+    "refuted",
+    "confirmed",
+    "refuted"
+   ],
+   "correct": 6,
+   "fp_total": 3,
+   "fp_removed": 3,
+   "tp_total": 3,
+   "tp_kept": 3,
+   "wrongly_refuted": [],
+   "wrongly_confirmed": [],
+   "over_cautious": 0,
+   "decisive": 6,
+   "calls": 6,
+   "cost_usd": 0.0161,
+   "ungrounded": [],
+   "weakly_grounded": [],
+   "budget_violations": []
+  },
+  "rbac": {
+   "findings": 5,
+   "verdicts": [
+    "confirmed",
+    "refuted",
+    "refuted",
+    "confirmed",
+    "confirmed"
+   ],
+   "correct": 5,
+   "fp_total": 2,
+   "fp_removed": 2,
+   "tp_total": 3,
+   "tp_kept": 3,
+   "wrongly_refuted": [],
+   "wrongly_confirmed": [],
+   "over_cautious": 0,
+   "decisive": 5,
+   "calls": 6,
+   "cost_usd": 0.0175,
+   "ungrounded": [],
+   "weakly_grounded": [],
+   "budget_violations": []
+  },
+  "tool-injection": {
+   "findings": 2,
+   "verdicts": [
+    "confirmed",
+    "confirmed"
+   ],
+   "correct": 2,
+   "fp_total": 0,
+   "fp_removed": 0,
+   "tp_total": 2,
+   "tp_kept": 2,
+   "wrongly_refuted": [],
+   "wrongly_confirmed": [],
+   "over_cautious": 0,
+   "decisive": 2,
+   "calls": 2,
+   "cost_usd": 0.0052,
+   "ungrounded": [],
+   "weakly_grounded": [],
+   "budget_violations": []
+  },
+  "unverifiable": {
+   "findings": 6,
+   "verdicts": [
+    "unverified",
+    "unverified",
+    "unverified",
+    "unverified",
+    "unverified",
+    "unverified"
+   ],
+   "correct": 6,
+   "fp_total": 1,
+   "fp_removed": 0,
+   "tp_total": 0,
+   "tp_kept": 0,
+   "wrongly_refuted": [],
+   "wrongly_confirmed": [],
+   "over_cautious": 0,
+   "decisive": 0,
+   "calls": 5,
+   "cost_usd": 0.016,
+   "ungrounded": [],
+   "weakly_grounded": [],
+   "budget_violations": []
+  }
+ }
+}

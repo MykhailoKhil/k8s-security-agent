@@ -1,0 +1,60 @@
+{
+ "findings": [
+  {
+   "severity": "CRITICAL",
+   "title": "CVE-2026-1111 in image app:2.4",
+   "resource": "shop/Deployment/web",
+   "controls": [],
+   "evidence": "CVE-2026-1111 critical in app:2.4",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "HIGH",
+   "title": "Secret db-creds stores a weak password",
+   "resource": "shop/Secret/db-creds",
+   "controls": [],
+   "evidence": "db-creds value is 'password123'",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "Deployment ghost uses the latest tag",
+   "resource": "shop/Deployment/ghost",
+   "controls": [
+    "KSV-0013"
+   ],
+   "evidence": "image tag latest on ghost",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "LOW",
+   "title": "Dockerfile has no HEALTHCHECK",
+   "resource": "services/demo-api/Dockerfile",
+   "controls": [],
+   "evidence": "KSV-0030 on Dockerfile",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "CRITICAL",
+   "title": "web runs an image with a critical CVE",
+   "resource": "shop/Deployment/web",
+   "controls": [],
+   "evidence": "CVE-2026-2222 critical in app:2.4, fixed in 2.5",
+   "fix": "bump image to app:2.5",
+   "confidence": "high"
+  },
+  {
+   "severity": "CRITICAL",
+   "title": "Traefik has CRITICAL CVEs in its running image",
+   "resource": "kube-system/Deployment/traefik",
+   "controls": [],
+   "evidence": "Trivy reports github.com/traefik/traefik/v3 v3.6.13 CRITICAL CVE-2026-65600, fixed in 3.6.23",
+   "fix": "upgrade traefik to 3.6.23",
+   "confidence": "high"
+  }
+ ]
+}

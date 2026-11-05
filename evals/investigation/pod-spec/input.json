@@ -1,0 +1,70 @@
+{
+ "findings": [
+  {
+   "severity": "HIGH",
+   "title": "payments runs a privileged container",
+   "resource": "shop/Deployment/payments",
+   "controls": [
+    "C-0057"
+   ],
+   "evidence": "C-0057 on payments",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "HIGH",
+   "title": "payments mounts the docker socket",
+   "resource": "shop/Deployment/payments",
+   "controls": [
+    "C-0048"
+   ],
+   "evidence": "hostPath mount on payments",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "web container may run as root",
+   "resource": "shop/Deployment/web",
+   "controls": [
+    "C-0013"
+   ],
+   "evidence": "C-0013 on web",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "worker uses a hostPath volume",
+   "resource": "shop/Deployment/worker",
+   "controls": [
+    "C-0048"
+   ],
+   "evidence": "C-0048 on worker",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "HIGH",
+   "title": "node-agent DaemonSet uses host networking",
+   "resource": "monitoring/DaemonSet/node-agent",
+   "controls": [
+    "C-0041"
+   ],
+   "evidence": "hostNetwork on node-agent",
+   "fix": "",
+   "confidence": "high"
+  },
+  {
+   "severity": "LOW",
+   "title": "web has no CPU or memory limits",
+   "resource": "shop/Deployment/web",
+   "controls": [
+    "C-0009"
+   ],
+   "evidence": "C-0009 on web",
+   "fix": "",
+   "confidence": "high"
+  }
+ ]
+}

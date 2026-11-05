@@ -1,0 +1,231 @@
+{
+ "findings": [
+  {
+   "severity": "CRITICAL",
+   "title": "CVE-2026-1111 in image app:2.4",
+   "resource": "shop/Deployment/web",
+   "controls": [],
+   "evidence": "CVE-2026-1111 critical in app:2.4",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "Deployment shop/web does run image \"app:2.4\", but the tools can't read image contents or CVE data, so CVE-2026-1111 can't be confirmed or refuted."
+  },
+  {
+   "severity": "HIGH",
+   "title": "Secret db-creds stores a weak password",
+   "resource": "shop/Secret/db-creds",
+   "controls": [],
+   "evidence": "db-creds value is 'password123'",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "get_manifest returned \"kind not allowed\" for Secret, so I couldn't read shop/Secret/db-creds or check whether its value is 'password123'."
+  },
+  {
+   "severity": "MEDIUM",
+   "title": "Deployment ghost uses the latest tag",
+   "resource": "shop/Deployment/ghost",
+   "controls": [
+    "KSV-0013"
+   ],
+   "evidence": "image tag latest on ghost",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "get_manifest for Deployment shop/ghost returned {\"found\":false}, so I couldn't check the image tag."
+  },
+  {
+   "severity": "LOW",
+   "title": "Dockerfile has no HEALTHCHECK",
+   "resource": "services/demo-api/Dockerfile",
+   "controls": [],
+   "evidence": "KSV-0030 on Dockerfile",
+   "fix": "",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "The finding concerns a Dockerfile (services/demo-api/Dockerfile) in source code, which the read-only Kubernetes tools can't inspect; no cluster object was checked."
+  },
+  {
+   "severity": "CRITICAL",
+   "title": "web runs an image with a critical CVE",
+   "resource": "shop/Deployment/web",
+   "controls": [],
+   "evidence": "CVE-2026-2222 critical in app:2.4, fixed in 2.5",
+   "fix": "bump image to app:2.5",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "Deployment shop/web runs image \"app:2.4\", which matches the version in the finding, but the tools can't read image contents or CVE data, so CVE-2026-2222 is not verified."
+  },
+  {
+   "severity": "CRITICAL",
+   "title": "Traefik has CRITICAL CVEs in its running image",
+   "resource": "kube-system/Deployment/traefik",
+   "controls": [],
+   "evidence": "Trivy reports github.com/traefik/traefik/v3 v3.6.13 CRITICAL CVE-2026-65600, fixed in 3.6.23",
+   "fix": "upgrade traefik to 3.6.23",
+   "confidence": "high",
+   "verified": "unverified",
+   "verification_evidence": "The Deployment kube-system/traefik runs image rancher/mirrored-library-traefik:3.6.13, which matches the version in the finding (v3.6.13). The tools can't read CVE data, so I couldn't confirm CVE-2026-65600 or its severity."
+  }
+ ],
+ "trace": {
+  "limits": {
+   "top_n": 10,
+   "calls_per_finding": 4,
+   "run_calls": 30,
+   "cost_usd": 1.0,
+   "per_finding_usd": 0.25
+  },
+  "run_calls": 5,
+  "cost_usd": 0.016,
+  "findings": [
+   {
+    "index": 0,
+    "title": "CVE-2026-1111 in image app:2.4",
+    "verified": "unverified",
+    "evidence": "Deployment shop/web does run image \"app:2.4\", but the tools can't read image contents or CVE data, so CVE-2026-1111 can't be confirmed or refuted.",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "Deployment shop/web does run image \"app:2.4\", but the tools can't read image contents or CVE data, so CVE-2026-1111 can't be confirmed or refuted.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0028
+   },
+   {
+    "index": 1,
+    "title": "Secret db-creds stores a weak password",
+    "verified": "unverified",
+    "evidence": "get_manifest returned \"kind not allowed\" for Secret, so I couldn't read shop/Secret/db-creds or check whether its value is 'password123'.",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "get_manifest returned \"kind not allowed\" for Secret, so I couldn't read shop/Secret/db-creds or check whether its value is 'password123'.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0028
+   },
+   {
+    "index": 2,
+    "title": "Deployment ghost uses the latest tag",
+    "verified": "unverified",
+    "evidence": "get_manifest for Deployment shop/ghost returned {\"found\":false}, so I couldn't check the image tag.",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "get_manifest for Deployment shop/ghost returned {\"found\":false}, so I couldn't check the image tag.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0027
+   },
+   {
+    "index": 3,
+    "title": "Dockerfile has no HEALTHCHECK",
+    "verified": "unverified",
+    "evidence": "The finding concerns a Dockerfile (services/demo-api/Dockerfile) in source code, which the read-only Kubernetes tools can't inspect; no cluster object was checked.",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "The finding concerns a Dockerfile (services/demo-api/Dockerfile) in source code, which the read-only Kubernetes tools can't inspect; no cluster object was checked.",
+     "error": null
+    },
+    "calls": 0,
+    "budget_hit": false,
+    "cost_usd": 0.0016
+   },
+   {
+    "index": 4,
+    "title": "web runs an image with a critical CVE",
+    "verified": "unverified",
+    "evidence": "Deployment shop/web runs image \"app:2.4\", which matches the version in the finding, but the tools can't read image contents or CVE data, so CVE-2026-2222 is not verified.",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "Deployment shop/web runs image \"app:2.4\", which matches the version in the finding, but the tools can't read image contents or CVE data, so CVE-2026-2222 is not verified.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0029
+   },
+   {
+    "index": 5,
+    "title": "Traefik has CRITICAL CVEs in its running image",
+    "verified": "unverified",
+    "evidence": "The Deployment kube-system/traefik runs image rancher/mirrored-library-traefik:3.6.13, which matches the version in the finding (v3.6.13). The tools can't read CVE data, so I couldn't confirm CVE-2026-65600 or its severity.",
+    "model_verdict": {
+     "verdict": "unverified",
+     "evidence": "The Deployment kube-system/traefik runs image rancher/mirrored-library-traefik:3.6.13, which matches the version in the finding (v3.6.13). The tools can't read CVE data, so I couldn't confirm CVE-2026-65600 or its severity.",
+     "error": null
+    },
+    "calls": 1,
+    "budget_hit": false,
+    "cost_usd": 0.0032
+   }
+  ],
+  "calls": [
+   {
+    "finding": 5,
+    "tool": "get_manifest",
+    "args": {
+     "kind": "Deployment",
+     "namespace": "kube-system",
+     "name": "traefik"
+    },
+    "t": 1793888913.1,
+    "ok": true,
+    "result": "{\"found\":true,\"manifest\":{\"kind\":\"Deployment\",\"metadata\":{\"name\":\"traefik\",\"namespace\":\"kube-system\"},\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"traefik\",\"image\":\"rancher/mirrored-library-traefik:3.6.13\"}]}}}}}"
+   },
+   {
+    "finding": 0,
+    "tool": "get_manifest",
+    "args": {
+     "kind": "Deployment",
+     "namespace": "shop",
+     "name": "web"
+    },
+    "t": 1793888913.5,
+    "ok": true,
+    "result": "{\"found\":true,\"manifest\":{\"kind\":\"Deployment\",\"metadata\":{\"name\":\"web\",\"namespace\":\"shop\"},\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"web\",\"image\":\"app:2.4\"}],\"volumes\":[]}}}}}"
+   },
+   {
+    "finding": 4,
+    "tool": "get_manifest",
+    "args": {
+     "kind": "Deployment",
+     "namespace": "shop",
+     "name": "web"
+    },
+    "t": 1793888914.2,
+    "ok": true,
+    "result": "{\"found\":true,\"manifest\":{\"kind\":\"Deployment\",\"metadata\":{\"name\":\"web\",\"namespace\":\"shop\"},\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"web\",\"image\":\"app:2.4\"}],\"volumes\":[]}}}}}"
+   },
+   {
+    "finding": 1,
+    "tool": "get_manifest",
+    "args": {
+     "kind": "Secret",
+     "namespace": "shop",
+     "name": "db-creds"
+    },
+    "t": 1793888917.6,
+    "ok": false,
+    "error": "kind not allowed; allowed: ['AppProject', 'Application', 'ClusterRole', 'ClusterRoleBinding', 'ConfigMap', 'CronJob', 'DaemonSet', 'Deployment', 'Ingress', 'Job', 'Namespace', 'NetworkPolicy', 'Pod', "
+   },
+   {
+    "finding": 2,
+    "tool": "get_manifest",
+    "args": {
+     "kind": "Deployment",
+     "namespace": "shop",
+     "name": "ghost"
+    },
+    "t": 1793888918.2,
+    "ok": true,
+    "result": "{\"found\":false}"
+   }
+  ]
+ }
+}

@@ -1,0 +1,24 @@
+{
+ "description": "Findings the tools cannot decide: image CVEs, Secrets (blocked), missing objects, repo-only issues.",
+ "accept": [
+  [
+   "unverified"
+  ],
+  [
+   "unverified"
+  ],
+  [
+   "refuted",
+   "unverified"
+  ],
+  [
+   "unverified"
+  ],
+  [
+   "unverified"
+  ],
+  [
+   "unverified"
+  ]
+ ]
+}
