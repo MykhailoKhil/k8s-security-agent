@@ -1,6 +1,6 @@
 .venv/
 out*/
-scripts/
 __pycache__/
 .env
 .claude/
+.DS_Store

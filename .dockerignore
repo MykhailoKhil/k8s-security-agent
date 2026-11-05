@@ -1,7 +1,8 @@
 .venv
-out
-scripts
+out*
+evals
 __pycache__
 .git
 .env
 chart
+.DS_Store
