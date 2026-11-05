@@ -66,6 +66,16 @@ async def main():
         print(f"investigated: {v.count(True)} confirmed, {v.count(False)} refuted, {v.count('unverified')} unverified; {trace['run_calls']} tool calls, ${inv_cost:.3f}", flush=True)
     data["meta"] = {"cost_usd": round(r["cost_usd"] + inv_cost, 3), "triage_cost_usd": round(r["cost_usd"], 3),
                     "investigation_cost_usd": round(inv_cost, 3), "seconds": round(time.time() - t0)}  # set by code, not the model
+    mode = os.environ.get("REMEDIATE", "off").lower()   # off | dry-run | pr. Manifest repos only; never touches a cluster. See remediate.py
+    if mode in ("dry-run", "pr") and paths:
+        from remediate import remediate
+        from scan import scan as scan_fn
+        data["remediation"] = await remediate(mode, items, scanned, paths, out, scan_fn)
+        rc = sum(x.get("cost", 0.0) for x in data["remediation"])
+        data["meta"]["remediation_cost_usd"] = round(rc, 3)
+        data["meta"]["cost_usd"] = round(data["meta"]["cost_usd"] + rc, 3)
+        for x in data["remediation"]:
+            print(f"remediation {x['repo']}: {x['status']} - {x.get('pr_url') or x['reason'][:140]}", flush=True)
     # run-to-run diff on scanner fingerprints (not LLM wording); history lives in OUT_DIR/history, so persist OUT_DIR between runs
     hist = out / "history"
     prev = load_previous(hist)

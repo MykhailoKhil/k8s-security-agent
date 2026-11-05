@@ -65,6 +65,7 @@ def render(d: dict) -> str:
                    + "".join(f"<tr><td>{badge(f.get('severity', ''))}</td><td>{e(f.get('title'))}<br><small>{e(f.get('resource'))}</small></td><td>{e(f.get('verification_evidence'))}</td></tr>" for f in refuted)
                    + "</table>") if refuted else ""
     diff_section = _diff_section(d.get("diff"))
+    fixes_section = _fixes_section(d.get("remediation"))
     when = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     m = d.get("meta") or {}
     run = f" &middot; run: ${e(m.get('cost_usd'))}, {e(m.get('seconds'))}s" if m else ""
@@ -76,7 +77,7 @@ def render(d: dict) -> str:
 <h2>Summary</h2><p>{e(d.get('summary'))}</p>
 {diff_section}<h2>Frameworks</h2><table><tr><th>Framework</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Score</th></tr>{fw}</table>
 <h2>Findings</h2><table><tr><th>Severity</th><th>Finding</th><th>Controls</th><th>Evidence / fix</th></tr>{rows}</table>
-{ref_section}<h2>Not checked</h2><table><tr><th>Item</th><th>Reason</th></tr>{nc}</table>
+{ref_section}{fixes_section}<h2>Not checked</h2><table><tr><th>Item</th><th>Reason</th></tr>{nc}</table>
 </main></body></html>"""
 
 
@@ -115,6 +116,20 @@ def _diff_section(df: dict | None) -> str:
             + (f"<h3>New</h3><table>{th}{_rows(df['new'])}</table>" if df["new"] else "")
             + (f"<h3>Fixed</h3><table>{th}{_rows(df['fixed'])}</table>" if df["fixed"] else "")
             + (f"<details><summary>Persisting ({n['persisting']} items in {len(df['persisting'])} rules)</summary><table>{th}{_rows(df['persisting'])}</table></details>" if df["persisting"] else ""))
+
+
+def _fixes_section(rem: list | None) -> str:
+    if not rem:
+        return ""
+    rows = []
+    for x in rem:
+        link = str(x.get("pr_url") or "")
+        what = (f'<a href="{e(link)}">draft PR</a>' if link.startswith("https://github.com/") else e(x.get("patch") or ""))
+        v = x.get("verification") or {}
+        ver = f"{e(v.get('resolved'))} resolved, {e(v.get('introduced'))} introduced ({e(', '.join(v.get('resolved_rules', [])))})" if v else ""
+        rows.append(f"<tr><td>{e(x.get('repo'))}</td><td>{e(x.get('status'))}</td><td>{e(', '.join(x.get('files', [])))}</td><td>{ver}</td><td>{what} {e(x.get('reason'))}</td></tr>")
+    return ("<h2>Proposed fixes (manifest repos)</h2><p class=\"meta\">Patches are verified by re-scanning; nothing is applied to a cluster. A human reviews every PR.</p>"
+            "<table><tr><th>Repo</th><th>Status</th><th>Files</th><th>Re-scan</th><th>Result</th></tr>" + "".join(rows) + "</table>")
 
 
 def _verified(f: dict) -> str:

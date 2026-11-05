@@ -32,4 +32,9 @@ assert "Changes since 20260101T000000Z" in dr and "&lt;b&gt;bad&lt;/b&gt;" in dr
 assert "<b>1</b>New" in dr and "<b>2</b>Fixed" in dr and "<b>3</b>Persisting" in dr and "partly new (1 of 4 items)" in dr
 assert "4 items from last run cannot be compared" in dr and "5 items are from targets" in dr and " …" in dr   # 12 items, 1 shown
 assert "First run: baseline of 7 scanner items" in render({"diff": {"previous": None, "items": 7}}) and "Changes since" not in render({})
+rr = render({"remediation": [
+    {"repo": "app<x>", "status": "pr", "files": ["k8s/web.yaml"], "verification": {"resolved": 2, "introduced": 0, "resolved_rules": ["KSV-0014"]}, "pr_url": "https://github.com/o/r/pull/7", "reason": "draft PR opened"},
+    {"repo": "b", "status": "rejected", "files": [], "pr_url": "javascript:alert(1)", "reason": "re-scan: 0 targeted items resolved <b>"}]})
+assert "Proposed fixes" in rr and 'href="https://github.com/o/r/pull/7"' in rr and "javascript:" not in rr.replace("javascript:alert(1)", "") and "app&lt;x&gt;" in rr and "<b>" not in rr.replace("<b>0</b>", "")
+assert 'href="javascript' not in rr and "2 resolved, 0 introduced (KSV-0014)" in rr and "Proposed fixes" not in render({})
 print("render ok")
