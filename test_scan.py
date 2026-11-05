@@ -21,3 +21,18 @@ assert reduce_pss({"SummaryControls": [{"ID": "1", "Name": "a", "Severity": "HIG
 print("scan ok")
 assert reduce_trivy({"Resources": [{"Kind": "Pod", "Name": "p", "Results": [{"Vulnerabilities": [{"Severity": "HIGH", "PkgName": "a", "VulnerabilityID": "CVE-2"}]}]}]})["vuln_counts"] == {"HIGH": 1}
 print("scan ok 2")
+
+import asyncio, tempfile
+from pathlib import Path
+from scan import run_retry
+with tempfile.TemporaryDirectory() as d:
+    d = Path(d); flag, out = d / "flag", d / "o.json"
+    flaky = ["sh", "-c", f'if [ -f {flag} ]; then echo ok > {out}; else touch {flag}; echo "504 Gateway Timeout"; exit 1; fi', "--output", str(out)]
+    rc, _ = asyncio.run(run_retry(flaky, 10, retries=2, delay=0.01))
+    assert rc == 0 and out.read_text() == "ok\n"                                                    # failed once, succeeded on retry
+    always = ["sh", "-c", "echo boom; exit 1", "--output", str(d / "x.json")]
+    assert asyncio.run(run_retry(always, 10, retries=1, delay=0.01))[0] == 1                       # gives up after retries
+    t0 = __import__("time").time()
+    perm = ["sh", "-c", 'echo "Error: no scannable Kubernetes resources found"; exit 1', "--output", str(d / "y.json")]
+    asyncio.run(run_retry(perm, 10, retries=3, delay=5)); assert __import__("time").time() - t0 < 3   # permanent errors are not retried
+print("scan ok 3")

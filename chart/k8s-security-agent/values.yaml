@@ -25,7 +25,7 @@ gitTokenSecret: { name: "", key: token }            # optional, for private AUDI
 kubeconfigSecret: { name: "", key: config }         # kubeconfig with READ-ONLY contexts; mounted at /kube/config
 
 persistence:
-  enabled: false               # true keeps reports in a PVC; false = emptyDir (lost when the pod ends)
+  enabled: false               # true keeps reports AND the run history (New/Fixed/Persisting diff) in a PVC; false = emptyDir, every run is a first run
   size: 1Gi
   storageClassName: ""
 

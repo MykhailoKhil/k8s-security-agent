@@ -9,7 +9,8 @@ Read-only audit of live clusters and manifest repos. Produces `report.html` (ope
 1. **Scan** (`scan.py`, Python, parallel, ~100 s): kubescape, trivy and kubectl run at once; their output is reduced to a ~15-30 KB digest.
 2. **Triage** (`agent.py`, one LLM call, no tools, ~30 s): dedupes, ranks and writes fixes as JSON. The model gets no shell and never sees raw scanner output.
 3. **Investigate** (`investigate.py`, optional, needs a cluster context): for the top 10 findings by severity the model gets four fixed, read-only Python tools and returns `confirmed`, `refuted` or `unverified`. Refuted findings move to their own report section and are not counted.
-4. **Render** (`render.py`): deterministic, HTML-escaped report. Run cost and time are added by code (`meta`) and shown in the report header.
+4. **Diff** (`history.py`): every run is saved to `OUT_DIR/history/`; the report shows what is New, Fixed and Persisting since the previous run, keyed by scanner fingerprints (`sha1(scope|rule|resource)`), never by the model's wording.
+5. **Render** (`render.py`): deterministic, HTML-escaped report. Run cost and time are added by code (`meta`) and shown in the report header.
 
 `TRIVY_SCANNERS=secret,misconfig` skips image CVEs for a faster run.
 
@@ -31,6 +32,8 @@ See `.env.example` for every variable. Main ones: `K8S_CONTEXTS`, `AUDIT_PATHS`,
 |---|---|
 | `report.html` | the report |
 | `findings.json` | structured findings, frameworks, "not checked" |
+| `items.json` | the full scanner item inventory with fingerprints (the digest is a capped summary of it; this is never sent to the model) |
+| `history/run-<UTC time>.json` | one file per run (items, findings, what was scanned); keep `OUT_DIR` between runs |
 | `trace.json` | every investigation tool call (args, reduced result, ok/error), per-finding verdicts, the model's raw verdict, budgets and cost |
 | `digest.json` | what the model saw (use it to audit the model's claims) |
 | `ks-*.json`, `trivy*.json`, `pss-*.json` | raw scanner output |
@@ -138,6 +141,26 @@ How to read this honestly:
 - **Detector limits:** names without a hyphen or a `Kind/` prefix, and counts the model derives by adding digest numbers, are not checked. Fixtures are hand-written in the digest shape; only `real-lab` is a real scan.
 - `evals/results-baseline.{json,md}` hold the per-case detail; table mode says "recorded" because the numbers are re-scored from the saved live replies.
 
+### Phase 4: run-to-run diff
+- **Identity:** a fingerprint per scanner item = `scope` (context or repo) + `rule` (control, KSV, CVE, secret rule, `ADMIN-BINDING`, ...) + canonical `namespace/Kind/name`. ReplicaSet and Pod names lose their generated suffixes, so a rollout is not "fixed + new". The same resource name in several overlays collapses into one item.
+- **Only comparable things are compared:** an item is "fixed" only if its scanner ran again this time; if a scanner failed or a target was left out, its old items are counted as "not comparable", and items from a target with no earlier scan are "no baseline", not "new".
+- **Per-finding tag:** each model finding is tagged new / persisting / partly new by matching its `controls` to scanner rule IDs. It is a hint; the New/Fixed/Persisting tables are the authoritative part.
+
+Measured:
+| check | result |
+|---|---|
+| scan the real cluster and both repos twice, nothing changed | 0 new, 0 fixed, 703 persisting (1289 items in run 1) |
+| run 2 lost the kubescape cluster scan (GitHub 504 on a policy download) | 586 items reported as "not comparable", not "fixed"; retries with backoff now added |
+| temporary repo copies: fix 4 issues (CPU limit, read-only FS), add a privileged container | exactly 2 new, 4 fixed, 6 persisting; the privileged finding is tagged NEW |
+| two LLM runs with different wording over the same items | identical diff (`test_history.py`) |
+
+Limits and things I found:
+- **Repo scanners do not evaluate Argo `Rollout` objects** (my `hostNetwork: true` test on the demo-api Rollout produced no finding). Kubescape and Trivy only understand standard workload kinds in manifests; the live-cluster scan sees the Rollout's pods.
+- **Severity changes on an item are not tracked** (same fingerprint = persisting). Lists in the report show 8 resources per rule; the full set is in `history/`.
+- **The history needs a persisted `OUT_DIR`.** For the Helm CronJob set `persistence.enabled=true`, otherwise every run is a "first run".
+- The digest now labels kubescape resources as `namespace/Kind/name`; before, it kept only the first 3 path segments of a resource ID (for example `apps/v1/demo-prod`), which lost the Kind and name.
+- Cloning `AUDIT_REPOS` into a persisted `OUT_DIR` used to fail on the second run; it now clears its own scratch directory first.
+
 ## Not covered
 Node and control-plane CIS checks (need a privileged pod, so the read-only identity skips them), and secrets in git history. Both are listed under "Not checked" in every report.
 
@@ -151,4 +174,4 @@ Node and control-plane CIS checks (need a privileged pod, so the read-only ident
 | `framework not found` | `kubescape list frameworks`, update `KS_FRAMEWORKS` in `scan.py` |
 
 ## Files
-`agent.py` entrypoint, `triage.py` the LLM call, `investigate.py` the read-only investigation tools, `scan.py` scanners and reducers, `evals/` triage evals, `render.py` HTML, `auditor-rbac.yaml` + `auditor-context.sh` read-only identity, `Dockerfile`, `chart/` Helm chart, `test_*.py` tests (`python test_scan.py && python test_render.py && python test_evals.py && python test_investigate.py && python test_inv_evals.py`).
+`agent.py` entrypoint, `triage.py` the LLM call, `investigate.py` the read-only investigation tools, `history.py` run history and diff, `scan.py` scanners and reducers, `evals/` triage evals, `render.py` HTML, `auditor-rbac.yaml` + `auditor-context.sh` read-only identity, `Dockerfile`, `chart/` Helm chart, `test_*.py` tests (`python test_scan.py && python test_render.py && python test_history.py && python test_evals.py && python test_investigate.py && python test_inv_evals.py`).

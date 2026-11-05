@@ -23,6 +23,23 @@ async def run(argv: list[str], timeout: int) -> tuple[int, str]:
     return p.returncode, out.decode(errors="replace")[-300:]
 
 
+PERMANENT = ("no scannable Kubernetes resources",)   # retrying cannot help
+
+
+async def run_retry(argv: list[str], timeout: int, retries: int | None = None, delay: float = 5.0) -> tuple[int, str]:
+    """Scanners fetch policies and vulnerability DBs over the network (a GitHub 504 failed a whole kubescape scan), so retry with backoff."""
+    retries = int(os.environ.get("SCAN_RETRIES", "2")) if retries is None else retries
+    f = outfile(argv)
+    for attempt in range(retries + 1):
+        f.unlink(missing_ok=True)
+        rc, tail = await run(argv, timeout)
+        if (rc == 0 and f.exists() and f.stat().st_size > 0) or any(p in tail for p in PERMANENT):
+            break
+        if attempt < retries:
+            await asyncio.sleep(delay * 3 ** attempt)   # 5 s, 15 s
+    return rc, tail
+
+
 def jobs(contexts: list[str], paths: list[str], out: Path) -> list[tuple[str, str, list[str]]]:
     """(kind, label, argv) per scan; kind picks the reducer."""
     j = []
@@ -235,7 +252,7 @@ async def rbac_and_argo(ctx: str) -> dict:
 async def scan(contexts: list[str], paths: list[str], out: Path, timeout: int) -> tuple[dict, list[dict], list[str]]:
     """Returns (digest for the model, full item inventory with fingerprints, list of 'scope|source' that produced data)."""
     todo = jobs(contexts, paths, out)
-    results = await asyncio.gather(*(run(argv, timeout) for _, _, argv in todo), *(rbac_and_argo(c) for c in contexts))
+    results = await asyncio.gather(*(run_retry(argv, timeout) for _, _, argv in todo), *(rbac_and_argo(c) for c in contexts))
     digest = {"clusters": {}, "repos": {}, "not_checked": []}
     items, scanned = {}, set()
 
