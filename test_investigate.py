@@ -54,6 +54,21 @@ env = d["spec"]["template"]["spec"]["containers"][0]["env"]
 assert env[0]["value"] == "<redacted>" and env[1]["value"] == "prod" and "status" not in d
 assert len(inv.cap({"x": "y" * 20000})) < inv.MAX_CHARS + 50
 
+# --- credentials hidden in args, URLs and odd env names never reach the model or the trace
+leak = {"kind": "Pod", "metadata": {"name": "p", "annotations": {"note": "see postgres://svc:annot-pw@db/x and Bearer abcdef1234567890abcdef"}}, "spec": {"containers": [{
+    "name": "c", "command": ["app", "--api-key=sk-live-123", "--password", "hunter2", "--db-host=db.internal", "--verbose"],
+    "args": ["--db", "postgres://admin:pw123@db/x", "--token=tok-9", "password=inline-pw", "AKIAABCDEFGHIJKLMNOP", "ghp_abcdefghijklmnopqrstuvwxyz0123456789"],
+    "env": [{"name": "DATABASE_URL", "value": "postgres://admin:pw123@db/x"}, {"name": "API_KEY", "value": "sk-live-123"}, {"name": "MODE", "value": "prod"},
+            {"name": "JWT", "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.c2lnbmF0dXJlMTIz"}, {"name": "CERT", "value": "-----BEGIN RSA PRIVATE KEY-----\nMIIBOgIBAAJB\n-----END RSA PRIVATE KEY-----"}]}]}}
+out = json.dumps(inv.reduce_obj(leak))
+for secret in ("sk-live-123", "pw123", "annot-pw", "hunter2", "tok-9", "inline-pw", "AKIAABCDEFGHIJKLMNOP", "ghp_abcdefghij", "abcdef1234567890abcdef", "c2lnbmF0dXJl", "MIIBOgIBAAJB"):
+    assert secret not in out, f"leaked: {secret}"
+assert "--db-host=db.internal" in out and "--verbose" in out and '"value": "prod"' in out.replace('"value":"prod"', '"value": "prod"') and "postgres://<redacted>@db/x" in out   # benign data survives
+R3 = FakeReader([leak | {"metadata": {"name": "p", "namespace": "shop"}}])
+res = inv.cap(inv.t_get_manifest(R3, dict(kind="Pod", namespace="shop", name="p")))
+assert "hunter2" not in res and "pw123" not in res and json.loads(res)["found"] is True        # still valid JSON after redaction
+assert inv.scrub("kind: Deployment name: web image: nginx:1.27.1 --port=8080") == "kind: Deployment name: web image: nginx:1.27.1 --port=8080"
+
 # --- the four tools on a fake cluster
 np_ = inv.t_list_network_policies(R, dict(namespace="shop"))
 assert np_["count"] == 2 and [p["default_deny_ingress"] for p in np_["policies"]] == [True, False]

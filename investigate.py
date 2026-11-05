@@ -84,8 +84,28 @@ class FakeReader:
 
 
 # ---------------------------------------------------------------- reducing
+# Values that look like credentials are removed from every string that can reach the model or trace.json (pod command/args, env values,
+# annotations ...), not only from env vars whose NAME looks secret. Over-redaction is the safe direction.
+SCRUBS = [
+    (re.compile(r"(?<=://)[^/\s:@\"']+:[^/\s@\"']+(?=@)"), "<redacted>"),                                           # scheme://user:password@host
+    (re.compile(r"(?i)(--?[\w.-]*(?:pass(?:word|wd)?|secret|token|api[-_]?key|credential|auth)[\w.-]*=)\S+"), r"\1<redacted>"),   # --api-key=VALUE
+    (re.compile(r"(?i)\b([\w.-]*(?:password|passwd|secret|token|api[-_]?key|credential)[\w.-]*\s*[=:]\s*)(?!<redacted>)[^\s,;\"']+"), r"\1<redacted>"),   # password=VALUE
+    (re.compile(r"\b(?:AKIA|ASIA)[0-9A-Z]{16}\b|\bgh[pousr]_\w{20,}|\bgithub_pat_\w{20,}|\bglpat-[\w-]{15,}|\bxox[abprs]-[\w-]{10,}|\bsk-[A-Za-z0-9_-]{16,}|\beyJ[\w-]{8,}\.[\w-]{8,}\.[\w-]{8,}"), "<redacted>"),
+    (re.compile(r"(?i)\bBearer\s+[\w.~+/=-]{12,}"), "Bearer <redacted>"),
+    (re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?(?:-----END [A-Z ]*PRIVATE KEY-----|$)"), "<redacted private key>"),
+]
+SECRET_FLAG = re.compile(r"(?i)^--?[\w.-]*(pass|secret|token|key|cred|auth)[\w.-]*$")
+
+
+def scrub(s: str) -> str:
+    for rx, rep in SCRUBS:
+        s = rx.sub(rep, s)
+    return s
+
+
 def clip(o, n=MAX_STR):
     if isinstance(o, str):
+        o = scrub(o)
         return o if len(o) <= n else o[:n] + "…"
     if isinstance(o, list):
         return [clip(x, n) for x in o[:60]]
@@ -110,6 +130,12 @@ def reduce_obj(o: dict) -> dict:
         if isinstance(x, dict):
             if "name" in x and "value" in x and SECRETISH.search(str(x["name"])):
                 x["value"] = "<redacted>"
+            for key in ("command", "args"):   # `--password hunter2`: the value is the NEXT element
+                if isinstance(x.get(key), list):
+                    xs = x[key]
+                    for i, a in enumerate(xs[:-1]):
+                        if isinstance(a, str) and "=" not in a and SECRET_FLAG.match(a):
+                            xs[i + 1] = "<redacted>"
             for v in x.values():
                 walk(v)
         elif isinstance(x, list):
