@@ -1,0 +1,60 @@
+{
+ "edits": [
+  {
+   "file": "k8s/web.yaml",
+   "old": "    spec:\n      containers:\n        - name: web\n          image: nginx:1.27.1\n",
+   "new": "    spec:\n      automountServiceAccountToken: false\n      securityContext:\n        seccompProfile:\n          type: RuntimeDefault\n      containers:\n        - name: web\n          image: nginx:1.27.1\n          securityContext:\n            allowPrivilegeEscalation: false\n",
+   "rules": [
+    "C-0034",
+    "KSV-0104",
+    "C-0016",
+    "KSV-0001"
+   ],
+   "why": "Disable SA token automount, set RuntimeDefault seccomp, block privilege escalation. None of these should affect stock nginx.",
+   "risk": "low"
+  }
+ ],
+ "skipped": [
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0270",
+   "reason": "CPU limits need real usage data; a guessed value could throttle the app."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0271",
+   "reason": "Memory limits need real usage data; a guessed value could cause OOM kills."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "KSV-0014",
+   "reason": "nginx writes to /var/cache/nginx and /var/run. A read-only root filesystem needs emptyDir mounts for these, and I can't confirm that without knowing what the app writes."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0013",
+   "reason": "Stock nginx:1.27.1 runs as root. runAsNonRoot would stop it starting, and the image can't be changed."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "KSV-0012",
+   "reason": "Same as C-0013. It needs a non-root image, or a valid UID that has been tested."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "KSV-0118",
+   "reason": "Partly covered by the seccomp and privilege-escalation settings. A full non-root context would break stock nginx."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0055",
+   "reason": "Dropping all capabilities would break root nginx, which needs CHOWN, SETUID and SETGID. That needs testing."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0030",
+   "reason": "This needs a separate NetworkPolicy resource, and the right rules depend on traffic that isn't known. It is outside this file's edit scope."
+  }
+ ],
+ "cost": 0.018564200000000003
+}

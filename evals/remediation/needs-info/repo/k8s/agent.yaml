@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent
+  namespace: shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agent
+  template:
+    metadata:
+      labels:
+        app: agent
+    spec:
+      volumes:
+        - name: state
+          hostPath:
+            path: /var/lib/agent
+      containers:
+        - name: agent
+          image: nginx:1.27.1
+          ports:
+            - containerPort: 8080
+          env:
+            - name: MODE
+              value: prod
+          volumeMounts:
+            - name: state
+              mountPath: /var/lib/agent

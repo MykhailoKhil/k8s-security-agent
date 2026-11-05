@@ -1,0 +1,27 @@
+{
+ "description": "Two workloads under a kustomization: the overlay must still build and nothing else may change.",
+ "expect_status": "dry-run",
+ "should_resolve_any_of": [
+  "KSV-0001",
+  "KSV-0003",
+  "KSV-0104",
+  "KSV-0118",
+  "C-0016",
+  "C-0055",
+  "C-0034",
+  "C-0013"
+ ],
+ "min_resolved": 1,
+ "kustomize_must_build": true,
+ "protected_fields": [
+  "image",
+  "replicas",
+  "ports",
+  "command",
+  "args",
+  "env",
+  "volumeMounts-removed",
+  "name",
+  "namespace"
+ ]
+}

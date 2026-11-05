@@ -1,0 +1,95 @@
+{
+ "edits": [
+  {
+   "file": "k8s/a.yaml",
+   "old": "    spec:\n      containers:\n",
+   "new": "    spec:\n      automountServiceAccountToken: false\n      securityContext:\n        seccompProfile:\n          type: RuntimeDefault\n      containers:\n",
+   "rules": [
+    "C-0034",
+    "KSV-0104",
+    "KSV-0118",
+    "C-0055"
+   ],
+   "why": "Disable SA token automount and enable default seccomp profile.",
+   "risk": "low"
+  },
+  {
+   "file": "k8s/a.yaml",
+   "old": "          image: nginx:1.27.1\n",
+   "new": "          image: nginx:1.27.1\n          securityContext:\n            allowPrivilegeEscalation: false\n",
+   "rules": [
+    "C-0016",
+    "KSV-0001"
+   ],
+   "why": "Block privilege escalation.",
+   "risk": "low"
+  },
+  {
+   "file": "k8s/b.yaml",
+   "old": "    spec:\n      containers:\n",
+   "new": "    spec:\n      automountServiceAccountToken: false\n      securityContext:\n        seccompProfile:\n          type: RuntimeDefault\n      containers:\n",
+   "rules": [
+    "C-0034",
+    "KSV-0104",
+    "KSV-0118",
+    "C-0055"
+   ],
+   "why": "Disable SA token automount and enable default seccomp profile.",
+   "risk": "low"
+  },
+  {
+   "file": "k8s/b.yaml",
+   "old": "          image: nginx:1.27.1\n",
+   "new": "          image: nginx:1.27.1\n          securityContext:\n            allowPrivilegeEscalation: false\n",
+   "rules": [
+    "C-0016",
+    "KSV-0001"
+   ],
+   "why": "Block privilege escalation.",
+   "risk": "low"
+  }
+ ],
+ "skipped": [
+  {
+   "file": "k8s/a.yaml",
+   "rule": "C-0013/KSV-0012",
+   "reason": "Stock nginx runs as root; runAsNonRoot would fail to start and a valid UID/port config is unknown."
+  },
+  {
+   "file": "k8s/a.yaml",
+   "rule": "KSV-0014",
+   "reason": "Read-only root needs knowledge of nginx write paths (cache, run, tmp)."
+  },
+  {
+   "file": "k8s/a.yaml",
+   "rule": "C-0270/C-0271",
+   "reason": "Limits need real usage numbers."
+  },
+  {
+   "file": "k8s/a.yaml",
+   "rule": "C-0030",
+   "reason": "Needs a NetworkPolicy resource, not a change in this file."
+  },
+  {
+   "file": "k8s/b.yaml",
+   "rule": "C-0013/KSV-0012",
+   "reason": "Stock nginx runs as root; runAsNonRoot would fail to start and a valid UID/port config is unknown."
+  },
+  {
+   "file": "k8s/b.yaml",
+   "rule": "KSV-0014",
+   "reason": "Read-only root needs knowledge of nginx write paths (cache, run, tmp)."
+  },
+  {
+   "file": "k8s/b.yaml",
+   "rule": "C-0270/C-0271",
+   "reason": "Limits need real usage numbers."
+  },
+  {
+   "file": "k8s/b.yaml",
+   "rule": "C-0030",
+   "reason": "Needs a NetworkPolicy resource, not a change in this file."
+  }
+ ],
+ "cost": 0.0249762
+}

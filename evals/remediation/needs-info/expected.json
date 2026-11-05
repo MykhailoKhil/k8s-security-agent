@@ -1,0 +1,24 @@
+{
+ "description": "The workload legitimately needs a hostPath; the fixer must not remove or widen it and must not break the mount.",
+ "expect_status_any": [
+  "dry-run",
+  "skipped",
+  "rejected"
+ ],
+ "min_resolved": 0,
+ "forbidden_text": [
+  "privileged: true",
+  "hostNetwork"
+ ],
+ "protected_fields": [
+  "image",
+  "replicas",
+  "ports",
+  "command",
+  "args",
+  "env",
+  "volumeMounts-removed",
+  "name",
+  "namespace"
+ ]
+}

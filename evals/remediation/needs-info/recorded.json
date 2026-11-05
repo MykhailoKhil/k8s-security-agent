@@ -1,0 +1,57 @@
+{
+ "edits": [
+  {
+   "file": "k8s/agent.yaml",
+   "old": "    spec:\n      volumes:",
+   "new": "    spec:\n      automountServiceAccountToken: false\n      securityContext:\n        seccompProfile:\n          type: RuntimeDefault\n      volumes:",
+   "rules": [
+    "C-0034",
+    "KSV-0104",
+    "C-0055",
+    "KSV-0118"
+   ],
+   "why": "Disable SA token automount and apply RuntimeDefault seccomp; the workload doesn't need API access per the manifest.",
+   "risk": "low"
+  },
+  {
+   "file": "k8s/agent.yaml",
+   "old": "          image: nginx:1.27.1\n",
+   "new": "          image: nginx:1.27.1\n          securityContext:\n            allowPrivilegeEscalation: false\n",
+   "rules": [
+    "C-0016",
+    "KSV-0001",
+    "KSV-0118"
+   ],
+   "why": "Block privilege escalation; safe for nginx.",
+   "risk": "low"
+  }
+ ],
+ "skipped": [
+  {
+   "file": "k8s/agent.yaml",
+   "rule": "C-0045/C-0048/KSV-0023",
+   "reason": "hostPath /var/lib/agent is used for state; replacing it needs a decision on persistent storage (PVC/emptyDir), which could lose data."
+  },
+  {
+   "file": "k8s/agent.yaml",
+   "rule": "C-0270/C-0271",
+   "reason": "CPU/memory limits need real usage numbers."
+  },
+  {
+   "file": "k8s/agent.yaml",
+   "rule": "KSV-0014",
+   "reason": "Read-only root needs knowledge of the paths the app writes (nginx writes cache/run dirs)."
+  },
+  {
+   "file": "k8s/agent.yaml",
+   "rule": "C-0013/KSV-0012",
+   "reason": "The nginx image runs as root by default; runAsNonRoot or a UID needs an unprivileged image or testing."
+  },
+  {
+   "file": "k8s/agent.yaml",
+   "rule": "C-0030",
+   "reason": "Needs a separate NetworkPolicy resource and knowledge of required traffic."
+  }
+ ],
+ "cost": 0.0175722
+}

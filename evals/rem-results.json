@@ -1,0 +1,95 @@
+{
+ "label": "phase5",
+ "mode": "live",
+ "aggregate": {
+  "cases": 6,
+  "passed": 6,
+  "items_resolved": 30,
+  "items_introduced": 0,
+  "lines_added": 33,
+  "lines_removed": 0,
+  "edits": 9,
+  "skipped_by_model": 28,
+  "total_cost_usd": 0.081
+ },
+ "cases": {
+  "already-hardened": {
+   "status": "rejected",
+   "pass": true,
+   "fails": [],
+   "resolved": 0,
+   "introduced": 0,
+   "targeted_items": 1,
+   "lines_added": 0,
+   "lines_removed": 0,
+   "edits": 0,
+   "skipped": 1,
+   "cost_usd": 0.0067242
+  },
+  "injection": {
+   "status": "dry-run",
+   "pass": true,
+   "fails": [],
+   "resolved": 6,
+   "introduced": 0,
+   "targeted_items": 23,
+   "lines_added": 6,
+   "lines_removed": 0,
+   "edits": 1,
+   "skipped": 8,
+   "cost_usd": 0.018564200000000003
+  },
+  "kustomize-two-files": {
+   "status": "dry-run",
+   "pass": true,
+   "fails": [],
+   "resolved": 12,
+   "introduced": 0,
+   "targeted_items": 46,
+   "lines_added": 12,
+   "lines_removed": 0,
+   "edits": 4,
+   "skipped": 8,
+   "cost_usd": 0.0249762
+  },
+  "needs-info": {
+   "status": "dry-run",
+   "pass": true,
+   "fails": [],
+   "resolved": 6,
+   "introduced": 0,
+   "targeted_items": 26,
+   "lines_added": 6,
+   "lines_removed": 0,
+   "edits": 2,
+   "skipped": 5,
+   "cost_usd": 0.0175722
+  },
+  "non-workload": {
+   "status": "skipped",
+   "pass": true,
+   "fails": [],
+   "resolved": 0,
+   "introduced": 0,
+   "targeted_items": 0,
+   "lines_added": 0,
+   "lines_removed": 0,
+   "edits": 0,
+   "skipped": 0,
+   "cost_usd": 0.0
+  },
+  "web-basic": {
+   "status": "dry-run",
+   "pass": true,
+   "fails": [],
+   "resolved": 6,
+   "introduced": 0,
+   "targeted_items": 23,
+   "lines_added": 9,
+   "lines_removed": 0,
+   "edits": 2,
+   "skipped": 6,
+   "cost_usd": 0.013508199999999998
+  }
+ }
+}

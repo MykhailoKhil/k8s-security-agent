@@ -1,0 +1,16 @@
+{
+ "description": "No workloads: nothing to fix.",
+ "expect_status": "skipped",
+ "min_resolved": 0,
+ "protected_fields": [
+  "image",
+  "replicas",
+  "ports",
+  "command",
+  "args",
+  "env",
+  "volumeMounts-removed",
+  "name",
+  "namespace"
+ ]
+}

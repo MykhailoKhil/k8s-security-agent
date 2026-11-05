@@ -1,0 +1,19 @@
+{
+ "description": "Already hardened: the best output is no PR.",
+ "expect_status_any": [
+  "skipped",
+  "rejected"
+ ],
+ "min_resolved": 0,
+ "protected_fields": [
+  "image",
+  "replicas",
+  "ports",
+  "command",
+  "args",
+  "env",
+  "volumeMounts-removed",
+  "name",
+  "namespace"
+ ]
+}

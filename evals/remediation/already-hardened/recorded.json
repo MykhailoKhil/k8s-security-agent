@@ -1,0 +1,11 @@
+{
+ "edits": [],
+ "skipped": [
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0030",
+   "reason": "C-0030 (Ingress and Egress blocked) requires a NetworkPolicy, which is a new resource and not in the Deployment manifest. A correct policy depends on which traffic the app needs, which I don't know. A deny-all policy could break the workload, and an allow rule would add network access. Add a NetworkPolicy in its own file after confirming the traffic flows."
+  }
+ ],
+ "cost": 0.0067242
+}

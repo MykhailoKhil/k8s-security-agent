@@ -1,0 +1,61 @@
+{
+ "edits": [
+  {
+   "file": "k8s/web.yaml",
+   "old": "      containers:\n        - name: web\n",
+   "new": "      automountServiceAccountToken: false\n      securityContext:\n        seccompProfile:\n          type: RuntimeDefault\n      containers:\n        - name: web\n",
+   "rules": [
+    "C-0034",
+    "KSV-0104",
+    "KSV-0118"
+   ],
+   "why": "Disable SA token automount and set RuntimeDefault seccomp at pod level.",
+   "risk": "low"
+  },
+  {
+   "file": "k8s/web.yaml",
+   "old": "            - containerPort: 8080\n",
+   "new": "            - containerPort: 8080\n          securityContext:\n            allowPrivilegeEscalation: false\n            capabilities:\n              drop:\n                - ALL\n",
+   "rules": [
+    "C-0016",
+    "KSV-0001",
+    "C-0055"
+   ],
+   "why": "Block privilege escalation and drop all capabilities.",
+   "risk": "low"
+  }
+ ],
+ "skipped": [
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0270",
+   "reason": "CPU limits need real usage data; guessing could throttle the workload."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0271",
+   "reason": "Memory limits need real usage data; guessing could OOM-kill the workload."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "KSV-0014",
+   "reason": "Read-only root needs known writable paths; nginx writes to cache/run dirs, so it needs tested emptyDir mounts."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0013",
+   "reason": "The nginx:1.27.1 image runs as root by default; runAsNonRoot would fail and a UID needs testing (the nginx-unprivileged image would be a change not allowed here)."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "KSV-0012",
+   "reason": "Same as C-0013: it needs a verified non-root UID and image support."
+  },
+  {
+   "file": "k8s/web.yaml",
+   "rule": "C-0030",
+   "reason": "This needs a separate NetworkPolicy resource, which is out of scope for this file."
+  }
+ ],
+ "cost": 0.013508199999999998
+}
