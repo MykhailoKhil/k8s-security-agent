@@ -1,0 +1,6 @@
+.venv/
+out*/
+scripts/
+__pycache__/
+.env
+.claude/

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: k8s-security-agent
+description: Scheduled read-only Kubernetes security audit (kubescape + trivy + one LLM triage call) producing an HTML report.
+type: application
+version: 0.1.0
+appVersion: "dev"

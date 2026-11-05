@@ -1,0 +1,34 @@
+image:
+  repository: ghcr.io/mykhailokhil/k8s-security-agent   # build and push the Dockerfile here
+  tag: dev
+  pullPolicy: IfNotPresent
+
+schedule: "0 6 * * 1"          # weekly, Monday 06:00
+concurrencyPolicy: Forbid
+activeDeadlineSeconds: 1800
+successfulJobsHistoryLimit: 3
+failedJobsHistoryLimit: 3
+
+# Everything the agent reads is an env var (see .env.example in the repo).
+env:
+  K8S_CONTEXTS: ""             # comma list of kubeconfig contexts, from kubeconfigSecret
+  AUDIT_REPOS: ""              # comma list of https git URLs to clone and scan
+  AUDIT_PATHS: ""
+  TRIVY_SCANNERS: vuln,secret,misconfig
+  EFFORT: low
+  CLAUDE_MODEL: ""
+  SCAN_TIMEOUT: "900"
+
+# Existing Secrets (this chart never creates credentials).
+anthropicApiKeySecret: { name: anthropic-api-key, key: api-key }
+gitTokenSecret: { name: "", key: token }            # optional, for private AUDIT_REPOS
+kubeconfigSecret: { name: "", key: config }         # kubeconfig with READ-ONLY contexts; mounted at /kube/config
+
+persistence:
+  enabled: false               # true keeps reports in a PVC; false = emptyDir (lost when the pod ends)
+  size: 1Gi
+  storageClassName: ""
+
+resources:
+  requests: { cpu: 500m, memory: 1Gi }
+  limits: { memory: 3Gi }

@@ -1,0 +1,7 @@
+.venv
+out
+scripts
+__pycache__
+.git
+.env
+chart
