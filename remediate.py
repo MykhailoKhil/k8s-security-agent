@@ -3,7 +3,7 @@
 What this module can and cannot do:
 - It never talks to a cluster and never writes to your working tree: edits are made on a temporary copy.
 - The model has no tools. It returns edits as data ({file, old, new}); code applies and validates them.
-- A patch is only offered if (1) every edit is exact and passes the deny-lists, (2) the YAML parses and every kustomization that
+- A patch is only offered if (1) every edit is exact, passes the line deny-lists and the structural check (yamlguard.py: only allow-listed hardening may be added), (2) the YAML parses and every kustomization that
   built before still builds, and (3) re-scanning the patched copy resolves at least one targeted item and introduces none.
 - Opening a PR needs REMEDIATE=pr and a write-scoped GITHUB_TOKEN; it creates a branch, commits the files and opens a DRAFT PR.
   It never merges, approves, deletes or force-pushes (the client refuses any other endpoint)."""
@@ -24,6 +24,7 @@ from pathlib import Path
 import yaml
 
 from history import diff
+from yamlguard import check_structure
 
 SEV = ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
 WORKLOAD = re.compile(r"^kind:\s*(Deployment|StatefulSet|DaemonSet|Job|CronJob|Pod)\b", re.M)
@@ -133,7 +134,7 @@ def apply_edits(files: dict[str, str], edits: list[dict]) -> tuple[dict[str, str
                 break
             text = text.replace(old, rep, 1)
         if not problem:
-            problem = check_diff(files[path], text) or check_yaml(text)
+            problem = check_diff(files[path], text) or check_yaml(text) or check_structure(files[path], text)
         if problem:
             rejected.append(f"{path}: {problem}")
         else:

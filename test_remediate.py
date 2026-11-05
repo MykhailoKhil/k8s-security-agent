@@ -74,6 +74,47 @@ two = rm.apply_edits({"a.yaml": DEPLOY, "b.yaml": DEPLOY}, [{"file": "a.yaml", "
 assert list(two[0]) == ["a.yaml"] and len(two[1]) == 1                                                       # a good file survives a bad one
 assert "+            readOnlyRootFilesystem: true" in rm.unified(F, ok)
 
+# --- structural guard: parsed documents, so flow-style YAML cannot smuggle changes past the line checks
+from yamlguard import check_structure
+ok_edit = lambda new: check_structure(DEPLOY, DEPLOY.replace(SC_OLD, new))  # noqa: E731
+FULL = DEPLOY.replace("          resources:\n            limits: { memory: 64Mi }\n", "")
+assert ok_edit(SC_NEW) is None and ok_edit(SC_OLD + "            capabilities: { drop: [ALL] }\n            seccompProfile: { type: RuntimeDefault }\n            runAsUser: 10001\n") is None
+assert check_structure(DEPLOY, DEPLOY.replace("      containers:\n", "      automountServiceAccountToken: false\n      securityContext:\n        seccompProfile: { type: RuntimeDefault }\n      containers:\n")) is None
+assert check_structure(DEPLOY, DEPLOY.replace("limits: { memory: 64Mi }", "limits: { memory: 64Mi, cpu: 200m }\n            requests: { cpu: 50m }")) is None   # adding limits is fine
+bypass = {
+    "sidecar (flow style)": DEPLOY + "        - {name: sidecar, image: evil.example/x:1, securityContext: {runAsNonRoot: true}}\n",
+    "env var added": DEPLOY.replace("          image: nginx:1.27\n", "          image: nginx:1.27\n          env: [{name: JAVA_TOOL_OPTIONS, value: '-javaagent:/x.jar'}]\n"),
+    "unlisted key imagePullPolicy": DEPLOY.replace("          image: nginx:1.27\n", "          image: nginx:1.27\n          imagePullPolicy: Always\n"),
+    "image changed": DEPLOY.replace("nginx:1.27", "nginx:9"),
+    "replicas added": DEPLOY.replace("spec:\n  template:", "spec:\n  replicas: 50\n  template:"),
+    "serviceAccountName added": DEPLOY.replace("    spec:\n      containers:", "    spec:\n      serviceAccountName: cluster-admin-sa\n      containers:"),
+    "secret volume": DEPLOY.replace("    spec:\n      containers:", "    spec:\n      volumes: [{name: s, secret: {secretName: db}}]\n      containers:"),
+    "hostPath volume (flow)": DEPLOY.replace("    spec:\n      containers:", "    spec:\n      volumes: [{name: h, hostPath: {path: /}}]\n      containers:"),
+    "mount over /etc": DEPLOY.replace("          image: nginx:1.27\n", "          image: nginx:1.27\n          volumeMounts: [{name: e, mountPath: /etc/nginx}]\n").replace("    spec:\n      containers:", "    spec:\n      volumes: [{name: e, emptyDir: {}}]\n      containers:"),
+    "mount on a non-emptyDir": DEPLOY.replace("          image: nginx:1.27\n", "          image: nginx:1.27\n          volumeMounts: [{name: nope, mountPath: /data}]\n"),
+    "privileged false->true via flow": DEPLOY.replace("securityContext:\n            runAsNonRoot: true", "securityContext: {runAsNonRoot: true, privileged: true}"),
+    "weakens existing runAsNonRoot": DEPLOY.replace("            runAsNonRoot: true\n", "            runAsNonRoot: false\n"),
+    "removes existing hardening": DEPLOY.replace("          securityContext:\n            runAsNonRoot: true\n", ""),
+    "changes an existing limit": DEPLOY.replace("memory: 64Mi", "memory: 1Mi"),
+    "capabilities add": DEPLOY.replace(SC_OLD, SC_OLD + "            capabilities: {add: [NET_ADMIN], drop: [ALL]}\n"),
+    "adds a second document": DEPLOY + "---\nkind: ClusterRoleBinding\nmetadata: {name: x}\n",
+    "container renamed": DEPLOY.replace("- name: web\n          image", "- name: web2\n          image"),
+    "metadata label change": DEPLOY.replace("  name: web\n", "  name: web\n  labels: {a: b}\n"),
+    "automount true": DEPLOY.replace("      containers:\n", "      automountServiceAccountToken: true\n      containers:\n"),
+}
+for name, text in bypass.items():
+    assert check_structure(DEPLOY, text), f"structural guard accepted: {name}"
+assert check_structure(DEPLOY, DEPLOY.replace(SC_OLD, SC_OLD + "            readOnlyRootFilesystem: true\n").replace("      containers:\n", "      volumes: [{name: tmp, emptyDir: {}}]\n      containers:\n").replace("          image: nginx:1.27\n", "          image: nginx:1.27\n          volumeMounts: [{name: tmp, mountPath: /tmp}]\n")) is None   # the real read-only-FS fix
+assert check_structure("kind: Service\nmetadata: {name: a}\n", "kind: Service\nmetadata: {name: b}\n") and check_structure(DEPLOY, "{ not yaml") and check_structure("a: 1\n", "a: 1\n") is None
+# and it is enforced on the real path: the three edits that used to be accepted are now rejected by apply_edits
+for name in ("sidecar (flow style)", "env var added", "unlisted key imagePullPolicy"):
+    old_img = "          image: nginx:1.27\n"
+    edit = {"sidecar (flow style)": old_img + "        - {name: sidecar, image: evil.example/backdoor:1, securityContext: {runAsNonRoot: true, allowPrivilegeEscalation: false}}\n",
+            "env var added": old_img + "          env: [{name: JAVA_TOOL_OPTIONS, value: '-javaagent:/x.jar'}]\n",
+            "unlisted key imagePullPolicy": old_img + "          imagePullPolicy: Always\n"}[name]
+    got, rej = rm.apply_edits(F, [{"file": "a.yaml", "old": old_img, "new": edit}])
+    assert not got and rej, f"apply_edits accepted {name}"
+
 # --- GitHub client: only the endpoints a draft PR needs
 gh = rm.GitHub("tok", transport=lambda *a: (200, {}))
 for m, p in [("DELETE", "/repos/o/r/git/refs/heads/x"), ("PUT", "/repos/o/r/pulls/1/merge"), ("PATCH", "/repos/o/r/pulls/1"), ("POST", "/repos/o/r/issues"),
