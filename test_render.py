@@ -16,4 +16,11 @@ assert "n/a" in out and "71.2%" in out
 assert "$0.1, 90s" in render({"meta": {"cost_usd": 0.1, "seconds": 90}})
 render({})  # empty input must not crash
 assert "confidence: &lt;i&gt;high&lt;/i&gt;" in out
+ver = render({"findings": [
+    {"severity": "HIGH", "title": "real <b>", "resource": "r", "evidence": "e", "verified": True, "verification_evidence": "binding b1 grants *"},
+    {"severity": "CRITICAL", "title": "fp thing", "resource": "r", "evidence": "e", "verified": False, "verification_evidence": "default-deny exists <i>"},
+    {"severity": "LOW", "title": "unk", "resource": "r", "evidence": "e", "verified": "unverified", "verification_evidence": "no tool"}]})
+assert "Refuted by investigation (1)" in ver and "default-deny exists &lt;i&gt;" in ver and "confirmed by investigation: binding b1 grants *" in ver
+assert 'border-top:4px solid #b42318"><b>0</b>' in ver and "unverified: no tool" in ver                      # the refuted CRITICAL is not counted
+assert "Refuted" not in render({"findings": [{"severity": "LOW", "title": "x", "evidence": "e"}]})
 print("render ok")

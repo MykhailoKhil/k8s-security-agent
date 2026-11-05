@@ -33,6 +33,9 @@ def badge(sev: str) -> str:
 
 
 def render(d: dict) -> str:
+    all_f = d.get("findings", [])
+    refuted = [f for f in all_f if f.get("verified") is False]   # investigation showed these are not real: kept visible, not counted
+    d = {**d, "findings": [f for f in all_f if f.get("verified") is not False]}
     counts = {s: 0 for s in SEV}
     for f in d.get("findings", []):
         s = str(f.get("severity", "")).upper()
@@ -47,6 +50,7 @@ def render(d: dict) -> str:
         f"<tr><td>{badge(f.get('severity', ''))}</td><td><b>{e(f.get('title'))}</b><br><small>{e(f.get('resource'))}</small></td>"
         f"<td>{e(', '.join(map(str, f.get('controls', []))))}</td><td>{e(f.get('evidence'))}"
         + (f" <small class=\"conf\">confidence: {e(f['confidence'])}</small>" if f.get("confidence") else "")
+        + _verified(f)
         + (f"<details><summary>Fix</summary><pre>{e(f['fix'])}</pre></details>" if f.get("fix") else "")
         + "</td></tr>"
         for f in findings
@@ -57,6 +61,9 @@ def render(d: dict) -> str:
         for x in d.get("frameworks", [])
     )
     nc = "".join(f"<tr><td>{e(x.get('item'))}</td><td>{e(x.get('reason'))}</td></tr>" for x in d.get("not_checked", []))
+    ref_section = (f"<h2>Refuted by investigation ({len(refuted)})</h2><table><tr><th>Severity</th><th>Finding</th><th>Why it is not real</th></tr>"
+                   + "".join(f"<tr><td>{badge(f.get('severity', ''))}</td><td>{e(f.get('title'))}<br><small>{e(f.get('resource'))}</small></td><td>{e(f.get('verification_evidence'))}</td></tr>" for f in refuted)
+                   + "</table>") if refuted else ""
     when = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
     m = d.get("meta") or {}
     run = f" &middot; run: ${e(m.get('cost_usd'))}, {e(m.get('seconds'))}s" if m else ""
@@ -68,8 +75,16 @@ def render(d: dict) -> str:
 <h2>Summary</h2><p>{e(d.get('summary'))}</p>
 <h2>Frameworks</h2><table><tr><th>Framework</th><th>Passed</th><th>Failed</th><th>Skipped</th><th>Score</th></tr>{fw}</table>
 <h2>Findings</h2><table><tr><th>Severity</th><th>Finding</th><th>Controls</th><th>Evidence / fix</th></tr>{rows}</table>
-<h2>Not checked</h2><table><tr><th>Item</th><th>Reason</th></tr>{nc}</table>
+{ref_section}<h2>Not checked</h2><table><tr><th>Item</th><th>Reason</th></tr>{nc}</table>
 </main></body></html>"""
+
+
+def _verified(f: dict) -> str:
+    v = f.get("verified")
+    if v is None:
+        return ""
+    label = {True: "confirmed by investigation", "unverified": "unverified"}.get(v, "unverified")
+    return f' <small class="conf">{e(label)}: {e(f.get("verification_evidence"))}</small>'
 
 
 def _score(v) -> str:

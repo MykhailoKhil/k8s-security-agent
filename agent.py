@@ -13,6 +13,7 @@ from scan import scan
 from triage import extract_json, triage
 
 
+
 def split(name: str) -> list[str]:
     return [x.strip() for x in os.environ.get(name, "").split(",") if x.strip()]
 
@@ -51,7 +52,16 @@ async def main():
     except ValueError:
         (out / "llm-raw.txt").write_text(text)
         sys.exit(f"model did not return JSON; raw saved to {out / 'llm-raw.txt'}")
-    data["meta"] = {"cost_usd": round(r["cost_usd"], 3), "seconds": round(time.time() - t0)}  # set by code, not the model
+    inv_cost = 0.0
+    if contexts and os.environ.get("INVESTIGATE", "1") == "1" and data.get("findings"):
+        from investigate import KubectlReader, investigate  # bounded, read-only tools; see investigate.py
+        data["findings"], trace = await investigate(data["findings"], KubectlReader(contexts))
+        (out / "trace.json").write_text(json.dumps(trace, indent=2))
+        inv_cost = trace["cost_usd"]
+        v = [f["verified"] for f in data["findings"]]
+        print(f"investigated: {v.count(True)} confirmed, {v.count(False)} refuted, {v.count('unverified')} unverified; {trace['run_calls']} tool calls, ${inv_cost:.3f}", flush=True)
+    data["meta"] = {"cost_usd": round(r["cost_usd"] + inv_cost, 3), "triage_cost_usd": round(r["cost_usd"], 3),
+                    "investigation_cost_usd": round(inv_cost, 3), "seconds": round(time.time() - t0)}  # set by code, not the model
     (out / "findings.json").write_text(json.dumps(data, indent=2))
     (out / "report.html").write_text(render(data))
     print(f"report: {out / 'report.html'}")
